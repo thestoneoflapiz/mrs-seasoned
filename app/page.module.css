@@ -1,14 +1,17 @@
-.main {
-  display: flex;
-  flex-direction: column;
-  justify-content: space-between;
-  align-items: center;
-  padding: 6rem;
-  min-height: 100vh;
+.main{
+  background: #BFFE71;  /* fallback for old browsers */
+  background: -webkit-linear-gradient(to right, #56B4D3, #BFFE71);  /* Chrome 10-25, Safari 5.1-6 */
+  background: linear-gradient(to right, #56B4D3, #BFFE71); /* W3C, IE 10+/ Edge, Firefox 16+, Chrome 26+, Opera 12+, Safari 7+ */
+
+  height: 100vh;
 }
 
 .logo {
   position: relative;
+  width: 50px;
   height: auto;
-  width: 100px;
+}
+
+.c_login{
+  padding: 10% 0;
 }
