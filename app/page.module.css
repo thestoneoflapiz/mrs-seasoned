@@ -12,6 +12,29 @@
   height: auto;
 }
 
+.c_nav_link{
+  text-align: right;
+}
+.c_nav_link:hover{
+  font-weight: 600;
+  color:#56B4D3;
+}
+
+.expand{
+  width: 100%;
+}
+
 .c_login{
-  padding: 10% 0;
+  background-color: #fff;
+  border-top-right-radius: 10px;
+  border-bottom-right-radius: 10px;
+  
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  right: 0;
+  left: 0;
+  width: 50%;
+  padding: 3%;
+  
 }

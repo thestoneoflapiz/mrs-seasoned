@@ -1,123 +1,136 @@
 "use client"
-import styles from "@/app/page.module.css";
+
 import { useState } from "react";
+import { Container, Row, Col, Form, Button, InputGroup } from "react-bootstrap";
+import styles from "@/app/page.module.css"
 
 export default function LoginPage(){
+  const noSpecialChars = /^[a-zA-Z0-9_]+$/;
+
+  const [validated, setValidated] = useState(false);
+  const [errors, setErrors] = useState({
+    username: null,
+    password: null
+  })
+  const [username, setUsername] = useState("")
+  const [password, setPassword] = useState("")
   
-  const letterNumberOnlyRegex = /^[a-zA-Z0-9_]+$/;
-
-  const [username, setUsername] = useState("");
-  const [password, setPassword] = useState("");
-  const [showHidePass, setShowHidePass] = useState(false);
-  // Form
-  const [errMessage, setErrMessage] = useState("");
-  const [errUser, setErrUser] = useState("");
-  const [errPass, setErrPass] = useState("");
-
-  async function onSubmit(event){
-    event.preventDefault();
-    if(username && password){
-      // procceed submit to server
-
-      setErrMessage("");
-      setErrUser("");
-      setErrPass("");
-      return;
-    }
-
-    setErrMessage("Error: Invalid Form.");
+  function setErrorMessage(field, msg){
+    setErrors((prev)=>{
+      const newState = prev;
+      newState[field] = msg;
+      return newState;
+    });
   }
 
-  function handleInputChange(event){
-    const value = event.target.value;
-    switch (event.target.id) {
+  const handleSubmit = (event) => {
+    const form = event.currentTarget;
+    event.preventDefault();
+    console.log(form);
+    if (form.checkValidity() === false) {
+      event.stopPropagation();
+    }
+
+    setValidated(true);
+  };
+
+  function handleInput(e){
+    const value = e.target.value;
+    let errors = [];
+
+    switch (e.target.id) {
       case "username":
         setUsername(value);
-        if(!letterNumberOnlyRegex.test(value)){
-          setErrUser("Letter, numbers, or underscore only!");
-          return;
-        }
-
-        if(value.length<8){
-          setErrUser("Minimum of 8 characters.");
-          return;
+    
+        errors = [];
+        if(value.length > 0){
+          if(!noSpecialChars.test(value)){
+            errors.push("letters, numbers, or underscore only!");
+          }
         }
         
-        setErrUser("");
-      break;
+        if(value.length < 8){
+            errors.push("minimum of 8 characters");
+        }
     
-      default:
-        setPassword(value);
-
-        if(value.length<8){
-          setErrPass("Minimum of 8 characters.");
+        if(errors.length){
+          setErrorMessage("username", errors)
           return;
         }
-
-        setErrPass("");
+        setErrorMessage("username", null)
+      break;
+    
+      case "password":
+        setPassword(value);
+    
+        errors = [];
+        if(value.length < 8){
+            errors.push("minimum of 8 characters");
+        }
+    
+        if(errors.length){
+          setErrorMessage("password", errors)
+          return;
+        }
+        setErrorMessage("password", null)
       break;
     }
-  }
-
-  function handleShowHidePass(){
-    setShowHidePass(!showHidePass)
   }
 
   return(
     <>
-      <div className={`container ${styles.c_login}`}>
-        <div className="row d-flex justify-content-center align-items-center">
-          <div className="col-lg-4 col-md-6 col-sm-10 col-10 mb-3 mb-sm-0">
-            <div className="card">
-              <div className="card-body">
-                <h5 className="card-title">Admin Dashboard Login</h5>
-                {errMessage ? <p className="text-danger">{errMessage}</p>: ""}
-                <form className="row g-3 needs-validation" novalidate onSubmit={onSubmit}>
-                  <div className="col-12">
-                    <input 
-                      type="text" 
-                      className={`form-control ${errUser && "is-invalid"}`} 
-                      id="username" 
-                      placeholder="username"
-                      value={username}
-                      onChange={handleInputChange}
-                      required
-                    />
-                    <div className={`${errUser ? "in" : ""}valid-feedback`}>{errUser}</div>
-                  </div>
-                  <div className="col-12">
-                    <div class="input-group mb-3">
-                      <input
-                        type={showHidePass?"text":"password"} 
-                        className={`form-control ${errPass && "is-invalid"}`} 
-                        id="password" 
-                        placeholder="password" 
-                        value={password}
-                        onChange={handleInputChange}
-                        required
-                      />
-                      <button 
-                        class={`btn btn-outline-${errPass?"danger":"secondary"}`} 
-                        type="button" 
-                        onClick={handleShowHidePass}
-                      >
-                        {showHidePass ?
-                        <i class="bi bi-eye-slash"></i>:
-                        <i class="bi bi-eye"></i>
-                        }
-                      </button>
-                    </div>
-                    <div className={`${errPass ? "in" : ""}valid-feedback`}>{errPass}</div>
-                  </div>
-                  <div className="col-12">
-                    <button className="btn btn-primary" type="submit">Login</button>
-                  </div>
-                </form>
-              </div>
-            </div>
-          </div>
-        </div>
+    <Container fluid>
+      <div  className={styles.c_login}> 
+        <Row className="justify-content-center align-items-center">
+          <Col xs={12}>
+            <h3>Admin Dashboard Login</h3>
+          </Col>
+          <Col className="mt-5">
+          <Form noValidate validated={validated} onSubmit={handleSubmit}>
+            <Row className="mb-3">
+              <Form.Group 
+                as={Col} md="12" 
+                className="mb-3"
+              >
+                <Form.Control
+                  required
+                  minLength={8}
+                  onChange={(e)=>handleInput(e)}
+                  isInvalid={errors.username}
+                  id="username"
+                  value={username}
+                  type="text"
+                  placeholder="username"
+                />
+                {
+                  errors.username && errors.username.map((err, i)=><Form.Control.Feedback type="invalid" key={i}>{err}</Form.Control.Feedback>)
+                }
+              </Form.Group>
+              <Form.Group 
+                as={Col} 
+                md="12" 
+              >
+                <Form.Control
+                  required
+                  minLength={8}
+                  onChange={(e)=>handleInput(e)}
+                  isInvalid={errors.password}
+                  id="password"
+                  value={password}
+                  type="password"
+                  placeholder="password"
+                />
+                {
+                  errors.password && errors.password.map((err, i)=><Form.Control.Feedback type="invalid" key={i}>{err}</Form.Control.Feedback>)
+                }
+              </Form.Group>
+            </Row>
+            <Button type="submit">Login</Button>
+          </Form>
+          </Col>
+        </Row>
       </div>
+    </Container>
     </>
   )
 }
