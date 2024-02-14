@@ -3,7 +3,8 @@
 import styles from "@/app/page.module.css";
 import Header from '@/components/header';
 import Datatable from "@/components/datatable";
-import AddExpenseModal from "./modal";
+import AddExpenseModal from "./add_modal";
+import ImportExpensesCSVModal from "./import_modal";
 
 import { 
   Container, 
@@ -75,8 +76,11 @@ export default function ExpensesPage(){
   }
 
   const [showAddModal, setShowAddModal] = useState(false);
+  const [showImportModal, setShowImportModal] = useState(false);
   const handleAddModalOpen = () => setShowAddModal(true);
   const handleAddModalClose = () => setShowAddModal(false);
+  const handleImportModalOpen = () => setShowImportModal(true);
+  const handleImportModalClose = () => setShowImportModal(false);
   
   useEffect(()=>{
     getExpenses();
@@ -104,7 +108,7 @@ export default function ExpensesPage(){
           </Row>
           <Row className="justify-content-end align-items-center">
             <Col lg={2} md={3} sm={6} xs={6}>
-              <Button variant="outline-primary" className="float-end">Import CSV</Button>
+              <Button variant="outline-primary" className="float-end" onClick={handleImportModalOpen}>Import CSV</Button>
             </Col>
           </Row>
         </div>
@@ -134,6 +138,7 @@ export default function ExpensesPage(){
         </div>
       </Container>
       <AddExpenseModal show={showAddModal} onModalClose={handleAddModalClose} />
+      <ImportExpensesCSVModal show={showImportModal} onModalClose={handleImportModalClose} />
     </main>
   );
 }
