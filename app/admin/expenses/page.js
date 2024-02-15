@@ -3,8 +3,8 @@
 import styles from "@/app/page.module.css";
 import Header from '@/components/header';
 import Datatable from "@/components/datatable";
-import AddExpenseModal from "./add_modal";
-import ImportExpensesCSVModal from "./import_modal";
+import AddExpenseModal from "./_modals/add";
+import ImportExpensesCSVModal from "./_modals/import";
 
 import { 
   Container, 
@@ -44,6 +44,7 @@ export default function ExpensesPage(){
     }],
     headers: ["Item","Price","QT", "Total", "From","Date","Created"],
     keys: ["title","price","quantity","total","bought_from","bought_date","created"],
+    sortable: ["title", "price", "quantity", "total", "bought_from","bought_date"],
     limit: 10,
     page: 1,
     pages: 1,
@@ -68,6 +69,14 @@ export default function ExpensesPage(){
     });
 
     return yearArr;
+  }
+
+  function generateSortableFields(){
+    const sortable = data.sortable.map((sort, i)=>{
+      return (<option key={i} value={sort}>{data.headers[i]}</option>)
+    });
+
+    return sortable;
   }
 
   function getExpenses(){
@@ -114,26 +123,39 @@ export default function ExpensesPage(){
         </div>
         <div className={styles.c_div__color}>
           <Row>
-            <Col lg={2} md={3} sm={3} xs={4} className="py-2">
+            <Col lg={2} md={3} sm={6} xs={6} className="py-2">
               <Form.Select aria-label="Select Month" defaultValue={months[dateNow.getMonth()]}>
                 <option disabled>Select Month</option>
                 {generateMonths(months)}
               </Form.Select>
             </Col>
-            <Col lg={2} md={3} sm={3} xs={4} className="py-2">
+            <Col lg={2} md={3} sm={6} xs={6} className="py-2">
               <Form.Select aria-label="Select Year" defaultValue={dateNow.getFullYear()}>
                 <option disabled>Select Year</option>
                 {generateYears(years)}
               </Form.Select>
             </Col>
-            <Col md={6} xs={12} className="py-2">
+            <Col md={4} xs={12} className="py-2">
               <Form.Group className="mb-3" controlId="searchBy">
                 <Form.Control type="text" placeholder="Search by Item, Price, Bought" />
               </Form.Group>
             </Col>
+            <Col lg={2} md={3} sm={6} xs={6} className="py-2">
+              <Form.Select aria-label="Select Field" defaultValue="">
+                <option disabled value="">Sort Field</option>
+                {generateSortableFields()}
+              </Form.Select>
+            </Col>
+            <Col lg={2} md={3} sm={6} xs={6} className="py-2">
+              <Form.Select aria-label="Sort By" defaultValue="">
+                <option disabled value="">Sort By</option>
+                <option value="asc">Asc</option>
+                <option value="desc">Desc</option>
+              </Form.Select>
+            </Col>
           </Row>
           <Row>
-            <Datatable dataList={data} pageLink="/admin/expenses"/>
+            {data ? <Datatable dataList={data} pageLink="/admin/expenses"/> : <h3>No Record Found.</h3>}
           </Row>
         </div>
       </Container>

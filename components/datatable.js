@@ -65,17 +65,19 @@ export default function Datatable({ dataList, pageLink="" }){
   return (
     <>
       <div>
-        <Table striped bordered hover>
-          <thead>
-            <tr>
-              <th>#</th>
-              {dataList.headers.map((hd, i)=><th key={i}>{hd}</th>)}             
-            </tr>
-          </thead>
-          <tbody>
-            {generateFields()}
-          </tbody>
-        </Table>
+        <div className={styles.c_table__responsive}>
+          <Table striped bordered hover>
+            <thead>
+              <tr>
+                <th>#</th>
+                {dataList.headers.map((hd, i)=><th key={i}>{hd}</th>)}             
+              </tr>
+            </thead>
+            <tbody>
+              {generateFields()}
+            </tbody>
+          </Table>
+        </div>
         {generatePagination()}
       </div>
     </>

@@ -78,3 +78,7 @@
 .c_div__color{
   background-color: #fff;
 }
+
+.c_table__responsive{
+  overflow: auto;
+}
