@@ -3,11 +3,8 @@
 import { Navbar, Container, Nav, Image, Row, Col } from "react-bootstrap";
 import styles from "@/app/page.module.css"
 import Link from "next/link";
-import { usePathname } from "next/navigation";
 
-export default function Header({ pageTitle }){
-  const currentPathName = usePathname();
-  const currentPathLinks = currentPathName.substring(0, currentPathName.lastIndexOf("/") );
+export default function Header({ pageTitle, activePage="" }){
 
   const pages = [
     {
@@ -34,7 +31,7 @@ export default function Header({ pageTitle }){
   function generateNavs(){
     const pageNav = pages.map((page, i) => {
       let className = `nav-link ${styles.c_nav_link}`;
-      if(currentPathName == page.link || currentPathLinks == page.link){
+      if(activePage == page.name){
         className += ` ${styles.active}`;
       }
       return (<Link key={i} className={className} href={page.link}>{page.name}</Link>)

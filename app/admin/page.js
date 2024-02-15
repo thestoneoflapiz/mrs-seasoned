@@ -4,7 +4,7 @@ import Header from '@/components/header';
 export default function Admin(){
   return(
     <main className={styles.main}>
-      <Header pageTitle="Admin Dashboard" />
+      <Header pageTitle="Admin Dashboard" activePage="Home" />
     </main>
   );
 }

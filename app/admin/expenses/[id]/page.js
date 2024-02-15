@@ -25,7 +25,7 @@ export default function ExpenseItem({ params }){
   return (
     <>
       <main className={styles.main}>
-        <Header pageTitle="Mrs. Seasoned - Expenses" />
+        <Header pageTitle="Mrs. Seasoned - Expenses" activePage="Expenses"/>
         <Container>
           <div className={styles.c_div}>
             <Row>
