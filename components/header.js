@@ -3,6 +3,7 @@
 import { Navbar, Container, Nav, Image, Row, Col } from "react-bootstrap";
 import styles from "@/app/page.module.css"
 import Link from "next/link";
+import { signOut } from "next-auth/react";
 
 export default function Header({ pageTitle, activePage="" }){
 
@@ -21,12 +22,12 @@ export default function Header({ pageTitle, activePage="" }){
     {
       name: "Sales",
       link: "/admin/sales", 
-    },
-    {
-      name: "Reporting",
-      link: "/admin/report", 
     }
   ]
+  
+  function logoutHandler(){
+    signOut();
+  }
   
   function generateNavs(){
     const pageNav = pages.map((page, i) => {
@@ -64,6 +65,13 @@ export default function Header({ pageTitle, activePage="" }){
             <Navbar.Collapse id="basic-navbar-nav">
               <Nav className="ms-auto">
                 {generateNavs()}
+                <a 
+                  key={"logout00"} 
+                  className={`nav-link ${styles.c_nav_link}`}
+                  onClick={logoutHandler}
+                >
+                  Logout
+                </a>
               </Nav>
             </Navbar.Collapse>
           </Col>
