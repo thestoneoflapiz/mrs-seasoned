@@ -1,12 +1,13 @@
 "use client"
 
-import { Navbar, Container, Nav, Image, Row, Col } from "react-bootstrap";
+import { Navbar, Container, Nav, Image, Row, Col, Button } from "react-bootstrap";
 import styles from "@/app/page.module.css"
 import Link from "next/link";
 import { signOut } from "next-auth/react";
+import { useRouter } from "next/navigation";
 
 export default function Header({ pageTitle, activePage="" }){
-
+  const router = useRouter();
   const pages = [
     {
       name: "Home",
@@ -54,7 +55,7 @@ export default function Header({ pageTitle, activePage="" }){
                 />
               </Col>
               <Col>
-                <Navbar.Brand>{pageTitle}</Navbar.Brand>
+                <Navbar.Brand className="fw-bold text-secondary">{pageTitle}</Navbar.Brand>
               </Col>
               <Col>
                 <Navbar.Toggle aria-controls="basic-navbar-nav" className="float-end" />
@@ -65,13 +66,20 @@ export default function Header({ pageTitle, activePage="" }){
             <Navbar.Collapse id="basic-navbar-nav">
               <Nav className="ms-auto">
                 {generateNavs()}
-                <a 
-                  key={"logout00"} 
-                  className={`nav-link ${styles.c_nav_link}`}
+                <Button 
+                  className="mx-2" 
+                  variant="outline-warning" 
                   onClick={logoutHandler}
                 >
                   Logout
-                </a>
+                </Button>
+                <Button 
+                  className="mx-2" 
+                  variant="outline-secondary" 
+                  onClick={()=>router.push("/admin/user")}
+                >
+                  <i className="bi bi-gear-fill"></i>
+                </Button>
               </Nav>
             </Navbar.Collapse>
           </Col>

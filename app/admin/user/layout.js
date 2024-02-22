@@ -8,7 +8,7 @@ export default function DashboardLayout({
 }) {
   return (
     <main className={styles.main}>
-      <Header pageTitle="Mrs. Seasoned - Expenses" activePage="Expenses"/>
+      <Header pageTitle="Mrs. Seasoned - User Profile" activePage="User"/>
       <Suspense fallback={<Loading/>}>
         {children}
       </Suspense>

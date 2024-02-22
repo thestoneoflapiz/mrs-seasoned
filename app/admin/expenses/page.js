@@ -1,7 +1,6 @@
 "use client"
 
 import styles from "@/app/page.module.css";
-import Header from '@/components/header';
 import Datatable from "@/components/datatable";
 import AddExpenseModal from "./_modals/add";
 import ImportExpensesCSVModal from "./_modals/import";
@@ -97,7 +96,7 @@ export default function ExpensesPage(){
   }, []);
 
   return(
-    <main className={styles.main}>
+    <>
       <Container>
         <div className={styles.c_div}>
           <Row>
@@ -160,6 +159,6 @@ export default function ExpensesPage(){
       </Container>
       <AddExpenseModal show={showAddModal} onModalClose={handleAddModalClose} />
       <ImportExpensesCSVModal show={showImportModal} onModalClose={handleImportModalClose} />
-    </main>
+    </>
   );
 }
