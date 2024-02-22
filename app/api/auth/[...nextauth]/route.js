@@ -11,6 +11,9 @@ export const authOptions = {
     jwt: true
   },
   callbacks: {
+    authorized({ req , token }) {
+      if(token) return true 
+    },
     async session({ session, token }) {
       session.user = token.user;
       return session;
