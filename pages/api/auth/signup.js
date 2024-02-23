@@ -22,12 +22,14 @@ async function handler(req, res){
   const db = client.db();
 
   try {
-
-    const found = await findUser(username, db);
+    const found = findUser(username, db);
     if(found){
-      const user = await db.collection(users).insertOne({
+      const user = await db.collection("users").insertOne({
         username: username,
-        password: hashed
+        name: username,
+        password: hashed,
+        created_at: new Date(),
+        created_by: "system",
       });
   
       if(!user){

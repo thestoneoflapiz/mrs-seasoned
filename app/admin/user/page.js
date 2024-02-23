@@ -6,8 +6,9 @@ import {
   Row, Col, 
   Breadcrumb, 
   Button, 
+  ToastContainer, Toast 
 } from "react-bootstrap";
-import { useSession } from "next-auth/react";
+import { signOut, useSession } from "next-auth/react";
 import PasswordModal from "./_modals/password";
 import { useState } from "react";
 
@@ -16,12 +17,45 @@ export default function UserPage(){
   const user = session?.user;
 
   const [show, setShow] = useState(false);
+  const [showToast, setShowToast] = useState(false);
+  const [toastMsg, setToastMsg] = useState({
+    variant: "success",
+    message: ""
+  });
+
   const handlePasswordModalOpen = () => setShow(true);
-  const handlePasswordModalClose = () => setShow(false);
+  const handlePasswordModalClose = (data) => {
+    setToastMsg((prev)=>{
+      const newState = prev;
+      newState.variant = data.variant;
+      newState.message = data.message;
+      return newState;
+    });
+    setShowToast(true);
+    setShow(false);
+
+    signOut();
+  };
 
   return(
     <>
       <Container>
+        <ToastContainer
+          className="p-3"
+          position="top-center"
+          style={{ zIndex: 1 }}
+        >
+          <Toast 
+            bg={toastMsg.variant}
+            onClose={() => setShowToast(false)} 
+            show={showToast} 
+            delay={5000} 
+            autohide
+            position="top-center"
+          >
+            <Toast.Body className="text-white">{toastMsg.message}</Toast.Body>
+          </Toast>
+        </ToastContainer>
         <div className={styles.c_div}>
           <Row>
             <Col>
@@ -55,7 +89,7 @@ export default function UserPage(){
             </Row>
           </Container>
         </div>
-        <PasswordModal onModalClose={handlePasswordModalClose} show={show}/>
+        <PasswordModal onModalClose={(data)=>handlePasswordModalClose(data)} show={show}/>
       </Container>
     </>
   );
