@@ -43,49 +43,6 @@ export default function AddExpenseModal({ show, onModalClose }){
     setValidated(true);
   };
 
-  function handleInput(e){
-    const value = e.target.value;
-    let errors = [];
-
-    switch (e.target.id) {
-      case "username":
-        setUsername(value);
-    
-        errors = [];
-        if(value.length > 0){
-          if(!noSpecialChars.test(value)){
-            errors.push("letters, numbers, or underscore only!");
-          }
-        }
-        
-        if(value.length < 8){
-            errors.push("minimum of 8 characters");
-        }
-    
-        if(errors.length){
-          setErrorMessage("username", errors)
-          return;
-        }
-        setErrorMessage("username", null)
-      break;
-    
-      case "password":
-        setPassword(value);
-    
-        errors = [];
-        if(value.length < 8){
-            errors.push("minimum of 8 characters");
-        }
-    
-        if(errors.length){
-          setErrorMessage("password", errors)
-          return;
-        }
-        setErrorMessage("password", null)
-      break;
-    }
-  }
-
   return (
     <>
       <Modal 
