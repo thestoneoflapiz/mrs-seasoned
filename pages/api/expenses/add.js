@@ -24,9 +24,10 @@ async function handler(req, res){
     const expenses = await db.collection("expenses").insertOne({
       item_type,
       item,
-      quantity,
-      price,
-      bought_date,
+      quantity: parseFloat(quantity),
+      price: parseFloat(price),
+      total: parseFloat(quantity)*parseFloat(price),
+      bought_date: new Date(bought_date),
       bought_from,
       remarks,
       created_at: new Date(),

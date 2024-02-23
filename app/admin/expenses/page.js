@@ -15,7 +15,8 @@ import {
   Toast
 } from "react-bootstrap";
 import { ConstMonths, ConstYears, ConstCurrentDate } from "@/helpers/constants";
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
+import { debounce } from "lodash";
 
 export default function ExpensesPage(){
   const [showToast, setShowToast] = useState(false);
@@ -23,48 +24,36 @@ export default function ExpensesPage(){
     variant: "success",
     message: ""
   });
+  const [showAddModal, setShowAddModal] = useState(false);
+  const [showImportModal, setShowImportModal] = useState(false);
+  const [page, setPage] = useState(1);
 
   const months = ConstMonths().months;
   const years = ConstYears("1975-01-01");
   const dateNow = ConstCurrentDate();
 
-  const [fMonth, setFMonth] = useState(months[dateNow.getMonth()]);
+  const [fMonth, setFMonth] = useState(dateNow.getMonth()+1);
   const [fYear, setFYear] = useState(dateNow.getFullYear());
   const [fSearch, setFSearch] = useState("");
   const [fSort, setFSort] = useState({
-    field: "",
-    sort: "asc"
+    field: "created_at",
+    sort: "desc"
   });
+  
   const [data, setData] = useState({
-    list: [{
-      id: "As22Agg",
-      title: "Esophaguys",
-      price: 1000,
-      quantity: 1,
-      total: 1000,
-      bought_from: "SM Smalls",
-      bought_date: "2024-02-01",
-      created: {
-        by: "Levi",
-        date: "2024-02-01 1PM"
-      }
-    }],
-    headers: ["Item","Price","QT", "Total", "From","Date","Created"],
-    keys: ["title","price","quantity","total","bought_from","bought_date","created"],
-    sortable: ["title", "price", "quantity", "total", "bought_from","bought_date"],
+    list: [],
+    headers: ["Type","Item","QT","Price","Total","From","Remarks","Date","Created"],
+    keys: ["item_type","item","quantity","price","total","bought_from","remarks","bought_date","created"],
+    sortable: ["item_type","item", "quantity", "price", "total", "bought_from","remarks","bought_date"],
     limit: 10,
     page: 1,
-    pages: 1,
-    total: 1,
-    sort: {
-      field: "",
-      sort: "asc"
-    }
+    pages: 0,
+    total: 0,
   });
 
   function generateMonths(months){
     const monthArr = months.map((mon, i)=>{
-      return (<option key={i} value={mon}>{mon}</option>)
+      return (<option key={i} value={i+1}>{mon}</option>)
     });
 
     return monthArr;
@@ -86,13 +75,45 @@ export default function ExpensesPage(){
     return sortable;
   }
 
-  function getExpenses(){
-    // month, year, search, sort
-    console.log("EXPENSES DATA HERE");
+  async function getExpenses(){
+    const filters = new URLSearchParams({
+      month: fMonth,
+      year: fYear,
+      search: fSearch,
+      sort: fSort.sort,
+      by: fSort.field,
+      page: page,
+      limit: 10,
+    });
+
+    const response = await fetch(`/api/expenses/list?${filters}`, {
+      method: "GET",
+    });
+
+    const result = await response.json();
+
+    if(!response.ok){
+      setToastMsg((prev)=>{
+        const newState = prev;
+        newState.variant = "danger";
+        newState.message = data.message || "SOMETHING WENT WRONG!";
+        return newState;
+      });
+
+      setShowToast(true);
+      return;
+    }
+
+    const { list, pagination } = result;
+    const newState = {...data};
+    newState.list = list;
+    newState.limit = pagination.limit;
+    newState.page = pagination.page;
+    newState.pages = pagination.pages;
+    newState.total = pagination.total;
+    setData(newState);
   }
 
-  const [showAddModal, setShowAddModal] = useState(false);
-  const [showImportModal, setShowImportModal] = useState(false);
   const handleAddModalOpen = () => setShowAddModal(true);
   const handleAddModalClose = (data) => {
     if(data){
@@ -103,6 +124,7 @@ export default function ExpensesPage(){
         return newState;
       });
       setShowToast(true);
+      getExpenses();
     }
     setShowAddModal(false)
   };
@@ -116,18 +138,80 @@ export default function ExpensesPage(){
         return newState;
       });
       setShowToast(true);
+      getExpenses();
     }
     setShowImportModal(false)
   };
-  
+
+
+  function handlePagination(type, count){
+    let newPage = 0;
+    switch (type) {
+      case "prev":
+        newPage = page===1 ? 1 : page-1;
+        setPage(newPage);
+      break;
+      case "next":
+        newPage = page===data.pages ? data.pages : page+1;
+        setPage(newPage);
+      break;
+      case "first":
+        setPage(1);
+      break;
+      case "last":
+        setPage(data.pages);
+      break;
+      default:
+        setPage(count)
+      break;
+    }
+  }
+
+  function handleDateChange(type, e){
+    const value = e.target.value;
+    switch (type) {
+      case "month":
+        setFMonth(value);
+      break;
+    
+      default:
+        setFYear(value);
+      break;
+    }
+  }
+
+  const handleSearch = (e) => debounceFn(e.target.value);
+  const debounceFn = useCallback(debounce((value)=>setFSearch(value), 500), []);
+
+  const handleSort = (type, e) => {
+    let newSort;
+
+    switch (type) {
+      case "field":
+        newSort = {
+          field: e.target.value,
+          sort: fSort.sort,
+        }
+        break;
+    
+      default:
+        newSort = {
+          field: fSort.field,
+          sort: e.target.value,
+        }
+        break;
+    }
+
+    setFSort(newSort);
+  };
+
   useEffect(()=>{
     getExpenses();
-
-  }, []);
+  }, [page, fMonth, fYear, fSearch, fSort]);
 
   return(
     <>
-      <Container>
+      <Container className="pb-5">
         <ToastContainer
           className="p-3"
           position="top-center"
@@ -168,38 +252,63 @@ export default function ExpensesPage(){
         <div className={styles.c_div__color}>
           <Row>
             <Col lg={2} md={3} sm={6} xs={6} className="py-2">
-              <Form.Select aria-label="Select Month" defaultValue={months[dateNow.getMonth()]}>
+              <Form.Select 
+                aria-label="Select Month" 
+                defaultValue={dateNow.getMonth()+1}
+                onChange={(e)=>handleDateChange("month", e)}
+              >
                 <option disabled>Select Month</option>
                 {generateMonths(months)}
               </Form.Select>
             </Col>
             <Col lg={2} md={3} sm={6} xs={6} className="py-2">
-              <Form.Select aria-label="Select Year" defaultValue={dateNow.getFullYear()}>
+              <Form.Select 
+                aria-label="Select Year" 
+                defaultValue={dateNow.getFullYear()}
+                onChange={(e)=>handleDateChange("year", e)}
+              >
                 <option disabled>Select Year</option>
                 {generateYears(years)}
               </Form.Select>
             </Col>
             <Col md={4} xs={12} className="py-2">
               <Form.Group className="mb-3" controlId="searchBy">
-                <Form.Control type="text" placeholder="Search by Item, Price, Bought" />
+                <Form.Control 
+                  type="text" 
+                  placeholder="Search by Item, Price, Bought" 
+                  onChange={(e)=>handleSearch(e)}
+                />
               </Form.Group>
             </Col>
             <Col lg={2} md={3} sm={6} xs={6} className="py-2">
-              <Form.Select aria-label="Select Field" defaultValue="">
+              <Form.Select 
+                aria-label="Select Field" 
+                defaultValue=""
+                onChange={(e)=>handleSort("field", e)}
+              >
                 <option disabled value="">Sort Field</option>
                 {generateSortableFields()}
               </Form.Select>
             </Col>
             <Col lg={2} md={3} sm={6} xs={6} className="py-2">
-              <Form.Select aria-label="Sort By" defaultValue="">
-                <option disabled value="">Sort By</option>
+              <Form.Select 
+                aria-label="Sort By" 
+                defaultValue="desc"
+                onChange={(e)=>handleSort("sort", e)}
+              >
                 <option value="asc">Asc</option>
                 <option value="desc">Desc</option>
               </Form.Select>
             </Col>
           </Row>
           <Row>
-            {data ? <Datatable dataList={data} pageLink="/admin/expenses"/> : <h3>No Record Found.</h3>}
+            {data?.list ? 
+              <Datatable 
+                dataList={data} 
+                pageLink="/admin/expenses" 
+                onPaginate={(type, count)=>handlePagination(type, count)}
+              /> 
+            : <h3>No Record Found.</h3>}
           </Row>
         </div>
       </Container>

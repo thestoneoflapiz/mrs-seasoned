@@ -35,7 +35,6 @@ export default function EditExpenseModal({ show, onModalClose, data }){
   const handleSubmit = (event) => {
     const form = event.currentTarget;
     event.preventDefault();
-    console.log(form);
     if (form.checkValidity() === false) {
       event.stopPropagation();
     }

@@ -4,14 +4,16 @@ import styles from "@/app/page.module.css"
 import Link from "next/link";
 
 
-export default function Datatable({ dataList, pageLink="" }){
+export default function Datatable({ dataList, pageLink="", onPaginate }){
 
   function generateFields(){
+    const arrOfTitles = ["title", "name", "item"];
+
     const fields = dataList.list.map((li, i)=>{
       const cells = dataList.keys.map((cell,i)=>{
         if(typeof li[cell] != "object"){
-          if(cell=="title" && li.id){
-            return <td key={i}><Link className={styles.ct_link} href={`${pageLink}/${li.id}`}>{li[cell]}</Link></td>;
+          if(arrOfTitles.includes(cell) && li._id){
+            return <td key={i}><Link className={styles.ct_link} href={`${pageLink}/${li._id}`}>{li[cell]}</Link></td>;
           }
           return <td key={i}>{li[cell]}</td>;
         }
@@ -20,8 +22,8 @@ export default function Datatable({ dataList, pageLink="" }){
       });
 
       return(
-        <tr>
-          <td>{i+1}</td>
+        <tr key={i}>
+          <td key={i+1}>{i+1}</td>
           {cells}
         </tr>
       )
@@ -34,11 +36,15 @@ export default function Datatable({ dataList, pageLink="" }){
     const { page, pages } = dataList;
     
     const paginationLimit = 4;
-    const startAt = page-1;
+    let startAt = page-1;
     const endCount = page+paginationLimit;
-
     const endAt = pages<endCount?pages:endCount;
 
+    const between = startAt-endAt;
+    if(between <= 5){
+      startAt = Math.round(endAt-5);
+      startAt = startAt < 0 ? 0 : startAt;
+    }
     const pagination = [];
     for (let i = startAt; i < endAt; i++) {
       pagination.push(i+1);
@@ -46,20 +52,24 @@ export default function Datatable({ dataList, pageLink="" }){
 
     const generated = pagination.map((g)=>{
       if(page==g){
-        return(<Pagination.Item key={g} linkClassName={styles.cp_link__active}>{g}</Pagination.Item>);
+        return(<Pagination.Item key={g} linkClassName={styles.cp_link__active} onClick={()=>handlePagination("count", g)}>{g}</Pagination.Item>);
       }
-      return(<Pagination.Item key={g} linkClassName={styles.cp_link}>{g}</Pagination.Item>);
+      return(<Pagination.Item key={g} linkClassName={styles.cp_link} onClick={()=>handlePagination("count", g)}>{g}</Pagination.Item>);
     });
 
     return (
       <Pagination >
-        <Pagination.First linkClassName={styles.cp_link}/>
-        <Pagination.Prev linkClassName={styles.cp_link}/>
+        <Pagination.First linkClassName={styles.cp_link} onClick={()=>handlePagination("first", 0)} />
+        <Pagination.Prev linkClassName={styles.cp_link} onClick={()=>handlePagination("prev", 0)} />
         {generated}
-        <Pagination.Next linkClassName={styles.cp_link}/>
-        <Pagination.Last linkClassName={styles.cp_link}/>
+        <Pagination.Next linkClassName={styles.cp_link} onClick={()=>handlePagination("next", 0)} />
+        <Pagination.Last linkClassName={styles.cp_link} onClick={()=>handlePagination("last", 0)} />
       </Pagination>
     );
+  }
+
+  function handlePagination(type, count){
+    onPaginate(type, count);
   }
 
   return (
