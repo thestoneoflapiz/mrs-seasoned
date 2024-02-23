@@ -27,5 +27,13 @@ export function ConstCurrentDate(){
 }
 
 export function ConstCurrentDateString(divisor="-"){
-  return `${now.getFullYear()}${divisor}${now.getDate()}${divisor}${now.getMonth()+1}`;
+  return `${now.getFullYear()}${divisor}${now.getMonth()+1}${divisor}${now.getDate()}`;
+}
+
+export function ItemTypes(){
+  return [
+    "Chicken", "Pork", "Beef", "Rice", 
+    "Condiments", "Packaging", "Vegetables", 
+    "Seafood", "Processed", "Others"
+  ]
 }

@@ -13,7 +13,6 @@ export default function PasswordModal({ show, onModalClose }){
     message: ""
   });
 
-
   const oldPasswordRef = useRef();
   const newPasswordRef = useRef();
   const confirmPasswordRef = useRef();
@@ -34,7 +33,6 @@ export default function PasswordModal({ show, onModalClose }){
     const enteredOld = oldPasswordRef.current.value;
     const enteredPassword = newPasswordRef.current.value;
     changePassword(enteredOld, enteredPassword);
-
 
     setValidated(true);
   };

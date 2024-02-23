@@ -25,13 +25,15 @@ export default function UserPage(){
 
   const handlePasswordModalOpen = () => setShow(true);
   const handlePasswordModalClose = (data) => {
-    setToastMsg((prev)=>{
-      const newState = prev;
-      newState.variant = data.variant;
-      newState.message = data.message;
-      return newState;
-    });
-    setShowToast(true);
+    if(data){
+      setToastMsg((prev)=>{
+        const newState = prev;
+        newState.variant = data.variant;
+        newState.message = data.message;
+        return newState;
+      });
+      setShowToast(true);
+    }
     setShow(false);
 
     signOut();

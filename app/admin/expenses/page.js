@@ -10,12 +10,20 @@ import {
   Row, Col, 
   Breadcrumb, 
   Button, 
-  Form 
+  Form,
+  ToastContainer,
+  Toast
 } from "react-bootstrap";
 import { ConstMonths, ConstYears, ConstCurrentDate } from "@/helpers/constants";
 import { useEffect, useState } from "react";
 
 export default function ExpensesPage(){
+  const [showToast, setShowToast] = useState(false);
+  const [toastMsg, setToastMsg] = useState({
+    variant: "success",
+    message: ""
+  });
+
   const months = ConstMonths().months;
   const years = ConstYears("1975-01-01");
   const dateNow = ConstCurrentDate();
@@ -86,7 +94,18 @@ export default function ExpensesPage(){
   const [showAddModal, setShowAddModal] = useState(false);
   const [showImportModal, setShowImportModal] = useState(false);
   const handleAddModalOpen = () => setShowAddModal(true);
-  const handleAddModalClose = () => setShowAddModal(false);
+  const handleAddModalClose = (data) => {
+    if(data){
+      setToastMsg((prev)=>{
+        const newState = prev;
+        newState.variant = data.variant;
+        newState.message = data.message;
+        return newState;
+      });
+      setShowToast(true);
+    }
+    setShowAddModal(false)
+  };
   const handleImportModalOpen = () => setShowImportModal(true);
   const handleImportModalClose = () => setShowImportModal(false);
   
@@ -98,6 +117,22 @@ export default function ExpensesPage(){
   return(
     <>
       <Container>
+        <ToastContainer
+          className="p-3"
+          position="top-center"
+          style={{ zIndex: 1 }}
+        >
+          <Toast 
+            bg={toastMsg.variant}
+            onClose={() => setShowToast(false)} 
+            show={showToast} 
+            delay={5000} 
+            autohide
+            position="top-center"
+          >
+            <Toast.Body className="text-white">{toastMsg.message}</Toast.Body>
+          </Toast>
+        </ToastContainer>
         <div className={styles.c_div}>
           <Row>
             <Col>
