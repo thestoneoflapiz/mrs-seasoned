@@ -107,7 +107,18 @@ export default function ExpensesPage(){
     setShowAddModal(false)
   };
   const handleImportModalOpen = () => setShowImportModal(true);
-  const handleImportModalClose = () => setShowImportModal(false);
+  const handleImportModalClose = (data) => {
+    if(data){
+      setToastMsg((prev)=>{
+        const newState = prev;
+        newState.variant = data.variant;
+        newState.message = data.message;
+        return newState;
+      });
+      setShowToast(true);
+    }
+    setShowImportModal(false)
+  };
   
   useEffect(()=>{
     getExpenses();
