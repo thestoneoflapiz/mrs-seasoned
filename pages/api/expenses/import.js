@@ -21,9 +21,9 @@ async function handler(req, res){
     return{
       item_type: d[0],
       item: d[1],
-      quantity: d[2],
-      price: d[3],
-      total: d[2]*d[3],
+      quantity: parseFloat(d[2]),
+      price: parseFloat(d[3]),
+      total: parseFloat(d[2])*parseFloat(d[3]),
       bought_date: new Date(d[4]),
       bought_from: d[5],
       remarks: d[6],
