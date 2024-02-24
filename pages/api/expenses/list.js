@@ -43,7 +43,7 @@ async function handler(req, res){
       "$exists": false,
     }
   }
-  console.log("completeQuery::: ", completeQuery);
+
   const client = await connectToDatabase();
   const db = client.db();
   
