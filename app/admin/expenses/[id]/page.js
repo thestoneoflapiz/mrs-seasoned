@@ -8,6 +8,7 @@ import EditExpenseModal from "../_modals/edit";
 import DeleteExpenseModal from "../_modals/delete";
 import { convertDateToString } from "@/helpers/date";
 import Loading from "@/components/loading";
+import Link from "next/link";
 
 export default function ExpenseItem({ params }){
   const [isLoading, setIsLoading] = useState(true);
@@ -66,6 +67,10 @@ export default function ExpenseItem({ params }){
       });
 
       setShowToast(true);
+      setItemDetails(null);
+      setTimeout(() => {
+        setIsLoading(false);
+      }, 500);
       return;
     }
     
@@ -80,6 +85,7 @@ export default function ExpenseItem({ params }){
   async function getSimilarExpenseItems(item){
     setDtIsLoading(true);
     const filters = new URLSearchParams({
+      ne_id: params.id,
       search: item,
       sort: "desc",
       by: "created_at",
@@ -102,6 +108,10 @@ export default function ExpenseItem({ params }){
       });
 
       setShowToast(true);
+
+      setTimeout(() => {
+        setDtIsLoading(false);
+      }, 500);
       return;
     }
 
@@ -171,176 +181,182 @@ export default function ExpenseItem({ params }){
             <Toast.Body className="text-white">{toastMsg.message}</Toast.Body>
           </Toast>
         </ToastContainer>
-        <div className={styles.c_div}>
-          <Row>
-            <Col>
-              <h3 className="text-light">Expense - Item</h3>
-              <Breadcrumb>
-                <Breadcrumb.Item className={styles.c_link} href="/admin">Home</Breadcrumb.Item>
-                <Breadcrumb.Item className={styles.c_link} href="/admin/expenses">Expenses</Breadcrumb.Item>
-                <Breadcrumb.Item className={styles.c_link} active>Item - {itemDetails?.item || params.id}</Breadcrumb.Item>
-              </Breadcrumb>
-            </Col>
-          </Row>
-          <Row className="justify-content-end align-items-center mb-2">
-            <Col>
-              <Button variant="outline-danger" className="float-end mx-3" onClick={handleDeleteModal}>Delete</Button>
-              <Button variant="warning" className="float-end" onClick={handleEditModal}>Edit</Button>
-            </Col>
-          </Row>
-        </div>
-        <div className={styles.c_div__color}>
-          {isLoading ? (<Loading variant="info" />): (
-            <Row className="mb-3">
-              {/* Select Type */}
-              <Form.Group
-                as={Col}
-                xs={6}
-                className="mb-3"
-              >
-                <Form.Label column="sm">Type</Form.Label>
-                <Form.Control
-                  disabled
-                  type="text"
-                  value={itemDetails?.item_type || ""}
-                />
-              </Form.Group>
-              {/* Item */}
-              <Form.Group 
-                as={Col} 
-                xs={6}
-                className="mb-3"
-              >
-                <Form.Label column="sm">Item</Form.Label>
-                <Form.Control
-                  disabled
-                  type="text"
-                  value={itemDetails?.item || ""}
-                />
-              </Form.Group>
-              {/* Quantity */}
-              <Form.Group 
-                as={Col}
-                xs={4}
-                className="mb-3"
-              >
-                <Form.Label column="sm">Quantity</Form.Label>
-                <Form.Control
-                  disabled
-                  type="text"
-                  value={itemDetails?.quantity || ""}
-                />
-              </Form.Group>
-              {/* Price */}
-              <Form.Group 
-                as={Col}
-                xs={4}
-                className="mb-3"
-                >
-                <Form.Label column="sm">Price</Form.Label>
-                <Form.Control
-                  disabled
-                  type="text"
-                  value={itemDetails?.price || ""}
-                />
-              </Form.Group>
-              {/* Total */}
-              <Form.Group 
-                as={Col}
-                xs={4}
-                className="mb-3"
-                >
-                <Form.Label column="sm">Total</Form.Label>
-                <Form.Control
-                  disabled
-                  type="text"
-                  value={itemDetails?.total || ""}
-                />
-              </Form.Group>
-              {/* Date Bought */}
-              <Form.Group 
-                as={Col} 
-                xs={6}
-                className="mb-3"
-              >
-                <Form.Label column="sm">Bought Date</Form.Label>
-                <Form.Control
-                  disabled
-                  type="text"
-                  value={itemDetails?.bought_date ? convertDateToString(itemDetails?.bought_date): ""}
-                />
-              </Form.Group>
-              {/* Bought From */}
-              <Form.Group 
-                as={Col} 
-                xs={6}
-                className="mb-3"
-              >
-                <Form.Label column="sm">Bought From</Form.Label>
-                <Form.Control
-                  disabled
-                  type="text"
-                  value={itemDetails?.bought_from || ""}
-                />
-              </Form.Group>
-              {/* Remarks */}
-              <Form.Group 
-                as={Col} 
-                xs={12}
-                className="mb-3"
-              >
-                <Form.Label column="sm">Remarks</Form.Label>
-                <Form.Control 
-                  as="textarea" 
-                  rows={2} 
-                  id="remarks" 
-                  placeholder="remarks" 
-                  disabled 
-                  defaultValue={itemDetails?.remarks || ""}
-                />
-              </Form.Group>
-              {/* CREATED BY */}
-              <Form.Group 
-                as={Col} 
-                xs={6}
-                className="mb-3"
-              >
-                <Form.Label column="sm">Created</Form.Label>
-                <Form.Control
-                  disabled
-                  type="text"
-                  value={`${itemDetails?.created_by || "!!ERR"} | ${convertDateToString(itemDetails?.created_at)}`}
-                />
-              </Form.Group>
-              <Form.Group 
-                as={Col} 
-                xs={6}
-                className="mb-3"
-              >
-                <Form.Label column="sm">Updated</Form.Label>
-                <Form.Control
-                  disabled
-                  type="text"
-                  value={itemDetails?.updated_at ? `${itemDetails?.updated_by || "!!ERR"} | ${convertDateToString(itemDetails?.updated_at)}` : "--"}
-                />
-              </Form.Group>
-            </Row>
-          )}
-        </div>
-        <div className={styles.c_div__color}>
-          <Row className="mb-3">
-            <h5 className="text-secondary">Similar Data to <span className="fw-bold">{itemDetails?.item || params.id}</span></h5>
-            {isLoading ? (<Loading variant="info" />) : (
-              similarData?.list && similarData.list.length>0 ? 
-              (<Datatable 
-                dataList={similarData} 
-                pageLink="/admin/expenses" 
-                onPaginate={(type, count)=>handlePagination(type, count)}
-              />) 
-            : (<h3 className="text-center fw-bold text-info">No Record Found.</h3>)
-            )}
-          </Row>
-        </div>
+        {
+          isLoading===false && itemDetails ? (<>
+            <div className={styles.c_div}>
+              <Row>
+                <Col>
+                  <h3 className="text-light">Expense - Item</h3>
+                  <Breadcrumb>
+                    <Breadcrumb.Item className={styles.c_link} href="/admin">Home</Breadcrumb.Item>
+                    <Breadcrumb.Item className={styles.c_link} href="/admin/expenses">Expenses</Breadcrumb.Item>
+                    <Breadcrumb.Item className={styles.c_link} active>Item - {itemDetails?.item || params.id}</Breadcrumb.Item>
+                  </Breadcrumb>
+                </Col>
+              </Row>
+              <Row className="justify-content-end align-items-center mb-2">
+                <Col>
+                  <Button variant="outline-danger" className="float-end mx-3" onClick={handleDeleteModal}>Delete</Button>
+                  <Button variant="warning" className="float-end" onClick={handleEditModal}>Edit</Button>
+                </Col>
+              </Row>
+            </div>
+            <div className={styles.c_div__color}>
+              {isLoading ? (<Loading variant="info" />): (
+                <Row className="mb-3">
+                  {/* Select Type */}
+                  <Form.Group
+                    as={Col}
+                    xs={6}
+                    className="mb-3"
+                  >
+                    <Form.Label column="sm">Type</Form.Label>
+                    <Form.Control
+                      disabled
+                      type="text"
+                      value={itemDetails?.item_type || ""}
+                    />
+                  </Form.Group>
+                  {/* Item */}
+                  <Form.Group 
+                    as={Col} 
+                    xs={6}
+                    className="mb-3"
+                  >
+                    <Form.Label column="sm">Item</Form.Label>
+                    <Form.Control
+                      disabled
+                      type="text"
+                      value={itemDetails?.item || ""}
+                    />
+                  </Form.Group>
+                  {/* Quantity */}
+                  <Form.Group 
+                    as={Col}
+                    xs={4}
+                    className="mb-3"
+                  >
+                    <Form.Label column="sm">Quantity</Form.Label>
+                    <Form.Control
+                      disabled
+                      type="text"
+                      value={itemDetails?.quantity || ""}
+                    />
+                  </Form.Group>
+                  {/* Price */}
+                  <Form.Group 
+                    as={Col}
+                    xs={4}
+                    className="mb-3"
+                    >
+                    <Form.Label column="sm">Price</Form.Label>
+                    <Form.Control
+                      disabled
+                      type="text"
+                      value={itemDetails?.price || ""}
+                    />
+                  </Form.Group>
+                  {/* Total */}
+                  <Form.Group 
+                    as={Col}
+                    xs={4}
+                    className="mb-3"
+                    >
+                    <Form.Label column="sm">Total</Form.Label>
+                    <Form.Control
+                      disabled
+                      type="text"
+                      value={itemDetails?.total || ""}
+                    />
+                  </Form.Group>
+                  {/* Date Bought */}
+                  <Form.Group 
+                    as={Col} 
+                    xs={6}
+                    className="mb-3"
+                  >
+                    <Form.Label column="sm">Bought Date</Form.Label>
+                    <Form.Control
+                      disabled
+                      type="text"
+                      value={itemDetails?.bought_date ? convertDateToString(itemDetails?.bought_date): ""}
+                    />
+                  </Form.Group>
+                  {/* Bought From */}
+                  <Form.Group 
+                    as={Col} 
+                    xs={6}
+                    className="mb-3"
+                  >
+                    <Form.Label column="sm">Bought From</Form.Label>
+                    <Form.Control
+                      disabled
+                      type="text"
+                      value={itemDetails?.bought_from || ""}
+                    />
+                  </Form.Group>
+                  {/* Remarks */}
+                  <Form.Group 
+                    as={Col} 
+                    xs={12}
+                    className="mb-3"
+                  >
+                    <Form.Label column="sm">Remarks</Form.Label>
+                    <Form.Control 
+                      as="textarea" 
+                      rows={2} 
+                      id="remarks" 
+                      placeholder="remarks" 
+                      disabled 
+                      defaultValue={itemDetails?.remarks || ""}
+                    />
+                  </Form.Group>
+                  {/* CREATED BY */}
+                  <Form.Group 
+                    as={Col} 
+                    xs={6}
+                    className="mb-3"
+                  >
+                    <Form.Label column="sm">Created</Form.Label>
+                    <Form.Control
+                      disabled
+                      type="text"
+                      value={`${itemDetails?.created_by || "!!ERR"} | ${convertDateToString(itemDetails?.created_at)}`}
+                    />
+                  </Form.Group>
+                  <Form.Group 
+                    as={Col} 
+                    xs={6}
+                    className="mb-3"
+                  >
+                    <Form.Label column="sm">Updated</Form.Label>
+                    <Form.Control
+                      disabled
+                      type="text"
+                      value={itemDetails?.updated_at ? `${itemDetails?.updated_by || "!!ERR"} | ${convertDateToString(itemDetails?.updated_at)}` : "--"}
+                    />
+                  </Form.Group>
+                </Row>
+              )}
+            </div>
+            <div className={styles.c_div__color}>
+              <Row className="mb-3">
+                <h5 className="text-secondary">Similar Data to <span className="fw-bold">{itemDetails?.item || params.id}</span></h5>
+                {isLoading ? (<Loading variant="info" />) : (
+                  similarData?.list && similarData.list.length>0 ? 
+                  (<Datatable 
+                    dataList={similarData} 
+                    pageLink="/admin/expenses" 
+                    onPaginate={(type, count)=>handlePagination(type, count)}
+                  />) 
+                : (<h3 className="text-center fw-bold text-info">No Record Found.</h3>)
+                )}
+              </Row>
+            </div>
+          </>): (<>
+            <h3 className="text-center fw-bold my-5"><Link href="/admin/expenses" className="text-light">No Record Found.</Link></h3>
+          </>)
+        }
       </Container>
       {
         itemDetails && (<>

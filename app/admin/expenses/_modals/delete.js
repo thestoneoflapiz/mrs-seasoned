@@ -1,16 +1,50 @@
 "use client"
 
 import { useState } from "react";
-import { Modal, Button, Form, Row, Col } from "react-bootstrap";
+import { Modal, Button, Row, Col, Toast } from "react-bootstrap";
 
 export default function DeleteExpenseModal({ show, onModalClose, data }){
+  const itemDetails = data;
+  const [showToast, setShowToast] = useState(false);
+  const [toastMsg, setToastMsg] = useState({
+    variant: "success",
+    message: ""
+  });
 
-  function handleModalClose(){
-    onModalClose();
+  function handleModalClose(data){
+    onModalClose(data);
   }
   
-  function handleDeleteExpense(){
-    console.log("DELETED!", data);
+  async function deleteExpense(){
+    const response = await fetch("/api/expenses/delete", {
+      method: "POST",
+      body: JSON.stringify({
+        _id: itemDetails._id
+      },{
+        headers:{
+          "Content-Type": "application/json"
+        }
+      })
+    });
+
+    const data = await response.json();
+
+    if(!response.ok){
+      setToastMsg((prev)=>{
+        const newState = prev;
+        newState.variant = "danger";
+        newState.message = data.message || "SOMETHING WENT WRONG!";
+        return newState;
+      });
+
+      setShowToast(true);
+      return;
+    }
+
+    handleModalClose({
+      variant: "success",
+      message: data.message || "Delete success!"
+    });
   }
 
   return (
@@ -27,13 +61,24 @@ export default function DeleteExpenseModal({ show, onModalClose, data }){
             <Modal.Title>Delete Item</Modal.Title>
           </Modal.Header>
           <Modal.Body>
+            <Toast 
+              bg={toastMsg.variant}
+              onClose={() => setShowToast(false)} 
+              show={showToast} 
+              delay={5000} 
+              autohide
+              position="top-center"
+              className="mt-2 mb-3"
+            >
+              <Toast.Body className="text-white">{toastMsg.message}</Toast.Body>
+            </Toast>
             <p>Are you sure to delete {data?.title && "expense item"}?</p>
             <Row className="justify-content-end align-items-center">
               <Col sm={3} xs={4}>
-                <Button type="button" variant="primary" onClick={handleDeleteExpense}>Yes</Button>
+                <Button type="button" variant="primary" onClick={deleteExpense}>Yes</Button>
               </Col>
               <Col sm={3} xs={4}>
-                <Button type="button" variant="outline-danger" onClick={handleModalClose}>No</Button>
+                <Button type="button" variant="outline-danger" onClick={()=>handleModalClose(null)}>No</Button>
               </Col>
             </Row>
           </Modal.Body>

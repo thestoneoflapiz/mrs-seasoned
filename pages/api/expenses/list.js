@@ -1,4 +1,5 @@
 import { connectToDatabase } from "@/helpers/db";
+import { BSON } from "mongodb";
 
 async function handler(req, res){
   if(req.method !== "GET"){
@@ -24,13 +25,24 @@ async function handler(req, res){
   let completeQuery = {};
 
   if(query.year && query.month){
-    completeQuery = {...mongoQuery}
+    completeQuery = {...completeQuery, ...mongoQuery}
   }
   
   if(query.search){
     completeQuery = {...completeQuery, ...mongoSearch}
   }
 
+  if(query?.ne_id){
+    const nid = new BSON.ObjectId(query.ne_id)
+    completeQuery = {...completeQuery, "_id": {"$ne": nid}}
+  }
+
+  completeQuery = {
+    ...completeQuery, 
+    "deleted_at": {
+      "$exists": false,
+    }
+  }
   console.log("completeQuery::: ", completeQuery);
   const client = await connectToDatabase();
   const db = client.db();

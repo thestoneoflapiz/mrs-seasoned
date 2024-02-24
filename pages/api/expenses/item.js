@@ -13,7 +13,7 @@ async function handler(req, res){
   
   try {
     const nid = new BSON.ObjectId(query._id)
-    const expenseItem = await db.collection("expenses").findOne({_id: nid});
+    const expenseItem = await db.collection("expenses").findOne({_id: nid, deleted_at: { "$exists": false}});
 
     if(!expenseItem){
       client.close();
