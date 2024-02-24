@@ -271,7 +271,7 @@ export default function SalesPage(){
               <Form.Group className="mb-3" controlId="searchBy">
                 <Form.Control 
                   type="text" 
-                  placeholder="Search by Item, Price, Bought" 
+                  placeholder="Search by..." 
                   onChange={(e)=>handleSearch(e)}
                 />
               </Form.Group>

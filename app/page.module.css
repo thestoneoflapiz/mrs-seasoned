@@ -87,3 +87,9 @@
   margin: auto;
   padding: 10% 0;
 }
+
+.c_orders_wrapper{
+  border-top: 3px #56B4D3 dotted;
+  border-bottom: 3px #56B4D3 dotted;
+  margin: 8px auto;
+}
