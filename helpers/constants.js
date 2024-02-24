@@ -37,3 +37,10 @@ export function ItemTypes(){
     "Seafood", "Processed", "Others"
   ]
 }
+
+export function MOPs(){
+  return [
+    "Cash", "GCash", "Bank Transfer",
+    "Card", "Others"
+  ]
+}

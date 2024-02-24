@@ -1,197 +1,246 @@
 "use client"
 
-import { useState } from "react";
-import { Modal, Button, Form, Row, Col } from "react-bootstrap";
+import { MOPs, ConstCurrentDateString } from "@/helpers/constants";
+import { useEffect, useRef, useState } from "react";
+import { Modal, Button, Form, Row, Col, Toast } from "react-bootstrap";
 
 export default function AddSalesModal({ show, onModalClose }){
+  const mops = MOPs();
 
   const [validated, setValidated] = useState(false);
-  const [errors, setErrors] = useState({
-    item: null,
-    price: null,
-    payment: null,
-    bought_date: null,
+  const [showToast, setShowToast] = useState(false);
+  const [toastMsg, setToastMsg] = useState({
+    variant: "success",
+    message: ""
   });
 
-  const [types, setTypes] = useState([
-    "Chicken", "Pork", "Beef", "Rice", 
-    "Condiments", "Packaging", "Vegetables", 
-    "Seafood", "Processed", "Others"
-  ])
-  
-  function handleModalClose(){
-    setValidated(false);
-    onModalClose();
-  }
-  
-  function setErrorMessage(field, msg){
-    setErrors((prev)=>{
-      const newState = prev;
-      newState[field] = msg;
-      return newState;
-    });
-  }
+  const [orderId, setOrderId] = useState("");
+  const orderDateRef = useRef();
+  const customerRef = useRef();
+  const customerIdRef = useRef();
+  const [orders, setOrders] = useState([]);
+  const [discount, setDiscount] = useState(0);
+  const [total, setTotal] = useState(0);
+  const mopRef = useRef();
+  const addressRef = useRef();
+  const deliveryFeeRef = useRef();
+  const remarksRef = useRef();
 
+  function handleModalClose(data){
+    setValidated(false);
+    onModalClose(data);
+  }
+  
   const handleSubmit = (event) => {
     const form = event.currentTarget;
     event.preventDefault();
-    console.log(form);
     if (form.checkValidity() === false) {
       event.stopPropagation();
     }
 
+    // createItem();
+    
     setValidated(true);
   };
 
-  function handleInput(e){
-    const value = e.target.value;
-    let errors = [];
+  async function createItem(){
 
-    switch (e.target.id) {
-      case "username":
-        setUsername(value);
-    
-        errors = [];
-        if(value.length > 0){
-          if(!noSpecialChars.test(value)){
-            errors.push("letters, numbers, or underscore only!");
-          }
+    const response = await fetch("/api/sales/add", {
+      method: "POST",
+      body: JSON.stringify({},{
+        headers:{
+          "Content-Type": "application/json"
         }
-        
-        if(value.length < 8){
-            errors.push("minimum of 8 characters");
-        }
-    
-        if(errors.length){
-          setErrorMessage("username", errors)
-          return;
-        }
-        setErrorMessage("username", null)
-      break;
-    
-      case "password":
-        setPassword(value);
-    
-        errors = [];
-        if(value.length < 8){
-            errors.push("minimum of 8 characters");
-        }
-    
-        if(errors.length){
-          setErrorMessage("password", errors)
-          return;
-        }
-        setErrorMessage("password", null)
-      break;
+      })
+    });
+
+    const data = await response.json();
+
+    if(!response.ok){
+      setToastMsg((prev)=>{
+        const newState = prev;
+        newState.variant = "danger";
+        newState.message = data.message || "SOMETHING WENT WRONG!";
+        return newState;
+      });
+
+      setShowToast(true);
+      return;
     }
+
+    handleModalClose({
+      variant: "success",
+      message: data.message || "Update success!"
+    });
   }
+
+  async function getOrderId(){
+
+    const response = await fetch("/api/sales/orderId", {
+      method: "GET",
+    });
+
+    const data = await response.json();
+
+    if(!response.ok){
+      setToastMsg((prev)=>{
+        const newState = prev;
+        newState.variant = "danger";
+        newState.message = data.message || "SOMETHING WENT WRONG!";
+        return newState;
+      });
+
+      setShowToast(true);
+      return;
+    }
+
+    const { order_id } = data;
+    setOrderId(order_id);
+  }
+
+  
+  useEffect(()=>{
+    getOrderId();
+  },[])
 
   return (
     <>
       <Modal 
         show={show} 
         onHide={handleModalClose} 
-        size="sm" 
+        size="md" 
         centered
         backdrop="static"
         keyboard={false}
       >
           <Modal.Header closeButton>
-            <Modal.Title>Add Item</Modal.Title>
+            <Modal.Title>Add Sales</Modal.Title>
           </Modal.Header>
           <Modal.Body>
+            <Toast 
+              bg={toastMsg.variant}
+              onClose={() => setShowToast(false)} 
+              show={showToast} 
+              delay={5000} 
+              autohide
+              position="top-center"
+              className="mt-2 mb-3"
+            >
+              <Toast.Body className="text-white">{toastMsg.message}</Toast.Body>
+            </Toast>
             <Form noValidate validated={validated} onSubmit={handleSubmit}>
               <Row className="mb-3">
-                {/* Select Type */}
+                {/* Order Date */}
+                <Form.Group 
+                  as={Col} 
+                  xs={6}
+                  className="mb-3"
+                >
+                  <Form.Label column="sm" className="text-secondary">Order Date</Form.Label>
+                  <Form.Control
+                    required
+                    id="order_date"
+                    type="text"
+                    placeholder="order date"
+                    defaultValue={ConstCurrentDateString()}
+                    ref={orderDateRef}
+                  />
+                </Form.Group>
+                {/* Order # */}
+                <Form.Group 
+                  as={Col} 
+                  xs={6}
+                  className="mb-3"
+                >
+                  <Form.Label column="sm" className="text-secondary">Order#</Form.Label>
+                  <Form.Control
+                    plaintext
+                    id="order_id"
+                    type="text"
+                    defaultValue={orderId}
+                  />
+                </Form.Group>
+               
+                <h3>Orders - multiple fields [menu-quantity]</h3>
+                
+                {/* Discount */}
+                <Form.Group 
+                  as={Col}
+                  xs={6}
+                  className="mb-3"
+                >
+                  <Form.Label column="sm" className="text-secondary">Discount%</Form.Label>
+                  <Form.Control
+                    min={0.00}
+                    step={0.01}
+                    id="discount"
+                    type="number"
+                    placeholder="discount"
+                    defaultValue={discount}
+                  />
+                </Form.Group>
+                {/* Total */}
+                <Form.Group 
+                  as={Col} 
+                  xs={6}
+                  className="mb-3"
+                >
+                  <Form.Label column="sm" className="text-secondary">Total Amount to Pay</Form.Label>
+                  <Form.Control
+                    plaintext
+                    id="total"
+                    type="text"
+                    placeholder="total"
+                    defaultValue={total}
+                  />
+                </Form.Group>
+                {/* Select MOP */}
                 <Form.Group
                   as={Col}
                   xs={12}
                   className="mb-3"
                 >
-                  <Form.Select aria-label="Select Type">
-                    <option disabled selected>Select Type</option>
-                    {types.map((type, i)=>{
-                      return (<option value={type} key={i}>{type}</option>)
+                  <Form.Label column="sm" className="text-secondary">MOP</Form.Label>
+                  <Form.Select 
+                    aria-label="Select MOP" 
+                    required
+                    ref={mopRef}
+                    defaultValue="Cash"
+                  >
+                    <option disabled value="">Select MOP</option>
+                    {mops.map((mop, i)=>{
+                      return (<option value={mop} key={i}>{mop}</option>)
                     })}
                   </Form.Select>
                 </Form.Group>
-                {/* Item */}
+                {/* Address */}
                 <Form.Group 
                   as={Col} 
                   xs={12}
                   className="mb-3"
                 >
+                  <Form.Label column="sm" className="text-secondary">Delivery Address</Form.Label>
                   <Form.Control
                     required
-                    minLength={2}
-                    id="item"
+                    id="address"
                     type="text"
-                    placeholder="item"
+                    placeholder="Street, Brgy, City"
+                    ref={addressRef}
                   />
-                  {
-                    errors.item && errors.item.map((err, i)=><Form.Control.Feedback type="invalid" key={i}>{err}</Form.Control.Feedback>)
-                  }
                 </Form.Group>
-                {/* Quantity */}
+                {/* Delivery Fee */}
                 <Form.Group 
-                  as={Col}
-                  xs={6}
+                  as={Col} 
+                  xs={12}
                   className="mb-3"
                 >
+                  <Form.Label column="sm" className="text-secondary">Delivery Fee</Form.Label>
                   <Form.Control
-                    required
-                    id="quantity"
+                    id="deliver_fee"
+                    min={0}
                     type="number"
-                    placeholder="quantity"
-                  />
-                  {
-                    errors.quantity && errors.quantity.map((err, i)=><Form.Control.Feedback type="invalid" key={i}>{err}</Form.Control.Feedback>)
-                  }
-                </Form.Group>
-                {/* Price */}
-                <Form.Group 
-                  as={Col}
-                  xs={6}
-                  className="mb-3"
-                >
-                  <Form.Control
-                    required
-                    min={1}
-                    id="price"
-                    type="number"
-                    placeholder="price"
-                  />
-                  {
-                    errors.price && errors.price.map((err, i)=><Form.Control.Feedback type="invalid" key={i}>{err}</Form.Control.Feedback>)
-                  }
-                </Form.Group>
-                {/* Date Bought */}
-                <Form.Group 
-                  as={Col} 
-                  xs={12}
-                  className="mb-3"
-                >
-                  <Form.Control
-                    required
-                    minLength={2}
-                    id="bought_date"
-                    type="text"
-                    placeholder="date bought"
-                  />
-                  {
-                    errors.bought_date && errors.bought_date.map((err, i)=><Form.Control.Feedback type="invalid" key={i}>{err}</Form.Control.Feedback>)
-                  }
-                </Form.Group>
-                {/* Bought From */}
-                <Form.Group 
-                  as={Col} 
-                  xs={12}
-                  className="mb-3"
-                >
-                  <Form.Control
-                    id="bought_from"
-                    type="text"
-                    placeholder="bought from"
+                    placeholder="0"
+                    ref={deliveryFeeRef}
                   />
                 </Form.Group>
                 {/* Remarks */}
@@ -199,7 +248,14 @@ export default function AddSalesModal({ show, onModalClose }){
                   as={Col} 
                   xs={12}
                 >
-                  <Form.Control as="textarea" rows={2} id="remarks" placeholder="remarks"/>
+                  <Form.Label column="sm" className="text-secondary">Remarks</Form.Label>
+                  <Form.Control 
+                    as="textarea" 
+                    rows={2} 
+                    id="remarks" 
+                    placeholder="things to note...?"
+                    ref={remarksRef}
+                  />
                 </Form.Group>
               </Row>
               <Button type="submit">Save</Button>

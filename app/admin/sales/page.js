@@ -1,9 +1,8 @@
 "use client"
 
 import styles from "@/app/page.module.css";
-import Header from '@/components/header';
 import Datatable from "@/components/datatable";
-import AddSalesModal from "./_modals/add";
+import AddSaleModal from "./_modals/add";
 import ImportSalesCSVModal from "./_modals/import";
 
 import { 
@@ -11,56 +10,52 @@ import {
   Row, Col, 
   Breadcrumb, 
   Button, 
-  Form 
+  Form,
+  ToastContainer,
+  Toast
 } from "react-bootstrap";
 import { ConstMonths, ConstYears, ConstCurrentDate } from "@/helpers/constants";
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
+import { debounce } from "lodash";
+import Loading from "@/components/loading";
 
 export default function SalesPage(){
+  const [isLoading, setIsLoading] = useState(true);
+  const [showToast, setShowToast] = useState(false);
+  const [toastMsg, setToastMsg] = useState({
+    variant: "success",
+    message: ""
+  });
+  const [showAddModal, setShowAddModal] = useState(false);
+  const [showImportModal, setShowImportModal] = useState(false);
+  const [page, setPage] = useState(1);
+
   const months = ConstMonths().months;
   const years = ConstYears("1975-01-01");
   const dateNow = ConstCurrentDate();
 
-  const [fMonth, setFMonth] = useState(months[dateNow.getMonth()]);
+  const [fMonth, setFMonth] = useState(dateNow.getMonth()+1);
   const [fYear, setFYear] = useState(dateNow.getFullYear());
   const [fSearch, setFSearch] = useState("");
   const [fSort, setFSort] = useState({
-    field: "",
-    sort: "asc"
+    field: "created_at",
+    sort: "desc"
   });
+  
   const [data, setData] = useState({
-    list: [{
-      id: "Order#1A2023",
-      title: "Order#1A2023",
-      sold_to: "Mr. Guillera Asuncion",
-      street: "BLK 9 Lot 10",
-      address: "Venezia, San Vicente",
-      discount: 5,
-      delivery_id: "",
-      delivery_fee: 0,
-      total_amount: 299.25,
-      order_date: "2024-02-01 1PM",
-      created: {
-        by: "Levi",
-        date: "2024-02-01 1PM"
-      }
-    }],
-    headers: ["Order#", "Sold To", "Street","Address","Discount","Delivery#","DF","Total","Date","Created"],
-    keys: ["title","sold_to","street","address","discount","delivery_id","delivery_fee", "total_amount", "order_date","created"],
-    sortable: ["title","sold_to","address","discount","delivery_id","delivery_fee", "total_amount", "order_date"],
+    list: [],
+    headers: ["Order#","Sold To","QT","Price","D%","Total","MOP","Address","Sold Date","Remarks","Created"],
+    keys: ["order_id","customer","quantity","price","discount","total","mop","address","sold_date","remarks","created"],
+    sortable: ["order_id","customer","total","address","sold_date"],
     limit: 10,
     page: 1,
-    pages: 1,
-    total: 1,
-    sort: {
-      field: "",
-      sort: "asc"
-    }
+    pages: 0,
+    total: 0,
   });
 
   function generateMonths(months){
     const monthArr = months.map((mon, i)=>{
-      return (<option key={i} value={mon}>{mon}</option>)
+      return (<option key={i} value={i+1}>{mon}</option>)
     });
 
     return monthArr;
@@ -82,27 +77,153 @@ export default function SalesPage(){
     return sortable;
   }
 
-  function getSales(){
-    // month, year, search, sort
-    console.log("Sales DATA HERE");
+  async function getSales(){
+    setIsLoading(true);
+    const filters = new URLSearchParams({
+      month: fMonth,
+      year: fYear,
+      search: fSearch,
+      sort: fSort.sort,
+      by: fSort.field,
+      page: page,
+      limit: data.limit,
+    });
+
+    const response = await fetch(`/api/sales/list?${filters}`, {
+      method: "GET",
+    });
+
+    const result = await response.json();
+
+    if(!response.ok){
+      setToastMsg((prev)=>{
+        const newState = prev;
+        newState.variant = "danger";
+        newState.message = result.message || "SOMETHING WENT WRONG!";
+        return newState;
+      });
+
+      setShowToast(true);
+      setTimeout(() => {
+        setIsLoading(false);
+      }, 500);
+      return;
+    }
+
+    const { list, pagination } = result;
+    const newState = {...data};
+    newState.list = list;
+    newState.limit = pagination.limit;
+    newState.page = pagination.page;
+    newState.pages = pagination.pages;
+    newState.total = pagination.total;
+    setData(newState);
+    setTimeout(() => {
+      setIsLoading(false);
+    }, 500);
   }
 
-  const [showAddModal, setShowAddModal] = useState(false);
-  const [showImportModal, setShowImportModal] = useState(false);
   const handleAddModalOpen = () => setShowAddModal(true);
-  const handleAddModalClose = () => setShowAddModal(false);
   const handleImportModalOpen = () => setShowImportModal(true);
-  const handleImportModalClose = () => setShowImportModal(false);
-  
+  const handleModalClose = (data) => {
+    if(data){
+      setToastMsg((prev)=>{
+        const newState = prev;
+        newState.variant = data.variant;
+        newState.message = data.message;
+        return newState;
+      });
+      setShowToast(true);
+      getSales();
+    }
+    setShowAddModal(false);
+    setShowImportModal(false)
+  };
+
+  function handlePagination(type, count){
+    let newPage = 0;
+    switch (type) {
+      case "prev":
+        newPage = page===1 ? 1 : page-1;
+        setPage(newPage);
+      break;
+      case "next":
+        newPage = page===data.pages ? data.pages : page+1;
+        setPage(newPage);
+      break;
+      case "first":
+        setPage(1);
+      break;
+      case "last":
+        setPage(data.pages);
+      break;
+      default:
+        setPage(count)
+      break;
+    }
+  }
+
+  function handleDateChange(type, e){
+    const value = e.target.value;
+    switch (type) {
+      case "month":
+        setFMonth(value);
+      break;
+    
+      default:
+        setFYear(value);
+      break;
+    }
+  }
+
+  const handleSearch = (e) => debounceFn(e.target.value);
+  const debounceFn = useCallback(debounce((value)=>setFSearch(value), 500), []);
+
+  const handleSort = (type, e) => {
+    let newSort;
+
+    switch (type) {
+      case "field":
+        newSort = {
+          field: e.target.value,
+          sort: fSort.sort,
+        }
+        break;
+    
+      default:
+        newSort = {
+          field: fSort.field,
+          sort: e.target.value,
+        }
+        break;
+    }
+
+    setFSort(newSort);
+  };
+
   useEffect(()=>{
     getSales();
-
-  }, []);
+  }, [page, fMonth, fYear, fSearch, fSort]);
 
   return(
-    <main className={styles.main}>
-      <Header pageTitle="Mrs. Seasoned - Sales" activePage="Sales"/>
-      <Container>
+    <> 
+      <Container className="pb-5">
+        <ToastContainer
+          className="p-3"
+          position="top-center"
+          style={{ zIndex: 1 }}
+        >
+          <Toast 
+            bg={toastMsg.variant}
+            onClose={() => setShowToast(false)} 
+            show={showToast} 
+            delay={5000} 
+            autohide
+            position="top-center"
+          >
+            <Toast.Body className="text-white">{toastMsg.message}</Toast.Body>
+          </Toast>
+        </ToastContainer>
         <div className={styles.c_div}>
           <Row>
             <Col>
@@ -127,43 +248,70 @@ export default function SalesPage(){
         <div className={styles.c_div__color}>
           <Row>
             <Col lg={2} md={3} sm={6} xs={6} className="py-2">
-              <Form.Select aria-label="Select Month" defaultValue={months[dateNow.getMonth()]}>
+              <Form.Select 
+                aria-label="Select Month" 
+                defaultValue={dateNow.getMonth()+1}
+                onChange={(e)=>handleDateChange("month", e)}
+              >
                 <option disabled>Select Month</option>
                 {generateMonths(months)}
               </Form.Select>
             </Col>
             <Col lg={2} md={3} sm={6} xs={6} className="py-2">
-              <Form.Select aria-label="Select Year" defaultValue={dateNow.getFullYear()}>
+              <Form.Select 
+                aria-label="Select Year" 
+                defaultValue={dateNow.getFullYear()}
+                onChange={(e)=>handleDateChange("year", e)}
+              >
                 <option disabled>Select Year</option>
                 {generateYears(years)}
               </Form.Select>
             </Col>
             <Col md={4} xs={12} className="py-2">
               <Form.Group className="mb-3" controlId="searchBy">
-                <Form.Control type="text" placeholder="Search by Item, Price, Bought" />
+                <Form.Control 
+                  type="text" 
+                  placeholder="Search by Item, Price, Bought" 
+                  onChange={(e)=>handleSearch(e)}
+                />
               </Form.Group>
             </Col>
             <Col lg={2} md={3} sm={6} xs={6} className="py-2">
-              <Form.Select aria-label="Select Field" defaultValue="">
+              <Form.Select 
+                aria-label="Select Field" 
+                defaultValue=""
+                onChange={(e)=>handleSort("field", e)}
+              >
                 <option disabled value="">Sort Field</option>
                 {generateSortableFields()}
               </Form.Select>
             </Col>
             <Col lg={2} md={3} sm={6} xs={6} className="py-2">
-              <Form.Select aria-label="Sort By" defaultValue="">
-                <option disabled value="">Sort By</option>
+              <Form.Select 
+                aria-label="Sort By" 
+                defaultValue="desc"
+                onChange={(e)=>handleSort("sort", e)}
+              >
                 <option value="asc">Asc</option>
                 <option value="desc">Desc</option>
               </Form.Select>
             </Col>
           </Row>
           <Row>
-            {data ? <Datatable dataList={data} pageLink="/admin/sales"/> : <h3>No Record Found.</h3>}
+            {isLoading ? (<Loading variant="info" />) : (
+              data?.list && data.list.length>0 ? 
+              (<Datatable 
+                dataList={data} 
+                pageLink="/admin/sales" 
+                onPaginate={(type, count)=>handlePagination(type, count)}
+              />) 
+            : (<h3 className="text-center fw-bold text-info">No Record Found.</h3>)
+            )}
           </Row>
         </div>
       </Container>
-      <AddSalesModal show={showAddModal} onModalClose={handleAddModalClose} />
-      <ImportSalesCSVModal show={showImportModal} onModalClose={handleImportModalClose} />
-    </main>
+      <AddSaleModal show={showAddModal} onModalClose={handleModalClose} />
+      <ImportSalesCSVModal show={showImportModal} onModalClose={handleModalClose} />
+    </>
   );
 }
