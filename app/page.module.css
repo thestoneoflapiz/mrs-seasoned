@@ -82,3 +82,8 @@
 .c_table__responsive{
   overflow: auto;
 }
+
+.c_loading_wrapper{
+  margin: auto;
+  padding: 10% 0;
+}

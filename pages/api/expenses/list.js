@@ -22,16 +22,19 @@ async function handler(req, res){
   const mongoSearch = {$text: {$search: query.search}};
 
   let completeQuery = {};
+
+  if(query.year && query.month){
+    completeQuery = {...mongoQuery}
+  }
+  
   if(query.search){
-    completeQuery = {...mongoQuery, ...mongoSearch}
-  }else{
-    completeQuery = {...mongoQuery};
+    completeQuery = {...completeQuery, ...mongoSearch}
   }
 
+  console.log("completeQuery::: ", completeQuery);
   const client = await connectToDatabase();
   const db = client.db();
   
-  console.log(sortObj);
   try {
     const totalExpenses = await db.collection("expenses").countDocuments(completeQuery);
     

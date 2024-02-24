@@ -17,8 +17,10 @@ import {
 import { ConstMonths, ConstYears, ConstCurrentDate } from "@/helpers/constants";
 import { useCallback, useEffect, useState } from "react";
 import { debounce } from "lodash";
+import Loading from "@/components/loading";
 
 export default function ExpensesPage(){
+  const [isLoading, setIsLoading] = useState(true);
   const [showToast, setShowToast] = useState(false);
   const [toastMsg, setToastMsg] = useState({
     variant: "success",
@@ -76,6 +78,7 @@ export default function ExpensesPage(){
   }
 
   async function getExpenses(){
+    setIsLoading(true);
     const filters = new URLSearchParams({
       month: fMonth,
       year: fYear,
@@ -83,7 +86,7 @@ export default function ExpensesPage(){
       sort: fSort.sort,
       by: fSort.field,
       page: page,
-      limit: 10,
+      limit: data.limit,
     });
 
     const response = await fetch(`/api/expenses/list?${filters}`, {
@@ -96,7 +99,7 @@ export default function ExpensesPage(){
       setToastMsg((prev)=>{
         const newState = prev;
         newState.variant = "danger";
-        newState.message = data.message || "SOMETHING WENT WRONG!";
+        newState.message = result.message || "SOMETHING WENT WRONG!";
         return newState;
       });
 
@@ -112,24 +115,14 @@ export default function ExpensesPage(){
     newState.pages = pagination.pages;
     newState.total = pagination.total;
     setData(newState);
+    setTimeout(() => {
+      setIsLoading(false);
+    }, 500);
   }
 
   const handleAddModalOpen = () => setShowAddModal(true);
-  const handleAddModalClose = (data) => {
-    if(data){
-      setToastMsg((prev)=>{
-        const newState = prev;
-        newState.variant = data.variant;
-        newState.message = data.message;
-        return newState;
-      });
-      setShowToast(true);
-      getExpenses();
-    }
-    setShowAddModal(false)
-  };
   const handleImportModalOpen = () => setShowImportModal(true);
-  const handleImportModalClose = (data) => {
+  const handleModalClose = (data) => {
     if(data){
       setToastMsg((prev)=>{
         const newState = prev;
@@ -140,9 +133,9 @@ export default function ExpensesPage(){
       setShowToast(true);
       getExpenses();
     }
+    setShowAddModal(false);
     setShowImportModal(false)
   };
-
 
   function handlePagination(type, count){
     let newPage = 0;
@@ -210,7 +203,7 @@ export default function ExpensesPage(){
   }, [page, fMonth, fYear, fSearch, fSort]);
 
   return(
-    <>
+    <> 
       <Container className="pb-5">
         <ToastContainer
           className="p-3"
@@ -302,18 +295,20 @@ export default function ExpensesPage(){
             </Col>
           </Row>
           <Row>
-            {data?.list ? 
-              <Datatable 
+            {isLoading ? (<Loading variant="info" />) : (
+              data?.list && data.list.length>0 ? 
+              (<Datatable 
                 dataList={data} 
                 pageLink="/admin/expenses" 
                 onPaginate={(type, count)=>handlePagination(type, count)}
-              /> 
-            : <h3>No Record Found.</h3>}
+              />) 
+            : (<h3 className="text-center fw-bold text-info">No Record Found.</h3>)
+            )}
           </Row>
         </div>
       </Container>
-      <AddExpenseModal show={showAddModal} onModalClose={handleAddModalClose} />
-      <ImportExpensesCSVModal show={showImportModal} onModalClose={handleImportModalClose} />
+      <AddExpenseModal show={showAddModal} onModalClose={handleModalClose} />
+      <ImportExpensesCSVModal show={showImportModal} onModalClose={handleModalClose} />
     </>
   );
 }

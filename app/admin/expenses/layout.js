@@ -9,7 +9,7 @@ export default function DashboardLayout({
   return (
     <main className={styles.main}>
       <Header pageTitle="Mrs. Seasoned - Expenses" activePage="Expenses"/>
-      <Suspense fallback={<Loading/>}>
+      <Suspense fallback={<Loading variant="light" />}>
         {children}
       </Suspense>
     </main>
