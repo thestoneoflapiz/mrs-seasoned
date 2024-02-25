@@ -7,12 +7,19 @@ async function handler(req, res){
   }
 
   const data = JSON.parse(req.body);
-  const { item_type, item, quantity, price, bought_date, bought_from, remarks } = data;
-  if(!item_type && !item && !quantity && !price){
+
+  const { order_date, order_id, customer, orders, 
+    discount, mop, delivery_address, delivery_fee,
+    total, remarks } = data;
+
+  if(
+    !order_date || !order_id || !customer 
+    || (!orders || orders.length == 0) || !delivery_address 
+    || !total
+  ){
     res.status(422).json({
       message: "Please fill in required fields..."
     });
-
     return;
   }
 
@@ -21,14 +28,18 @@ async function handler(req, res){
   const authUser = await getAuthUser(req);
 
   try {
-    const sales = await db.collection("sales").insertOne({
-      item_type,
-      item,
-      quantity: parseFloat(quantity),
-      price: parseFloat(price),
-      total: parseFloat(quantity)*parseFloat(price),
-      bought_date: new Date(bought_date),
-      bought_from,
+    const cCustomer = await getOrCreateCustomer(customer, db, authUser);
+    const cOrders = createOrders(orders);
+    const sales = await db.collection("orders").insertOne({
+      order_date: new Date(order_date),
+      order_id,
+      customer_id: cCustomer._id,
+      "orders": cOrders,
+      discount,
+      mop,
+      delivery_address,
+      delivery_fee,
+      total,
       remarks,
       created_at: new Date(),
       created_by: authUser?.name || (authUser?.name || "!!ERR")
@@ -36,7 +47,11 @@ async function handler(req, res){
 
     client.close();
     res.status(201).json({
-      message: "Item added!"
+      message: "Sale added!",
+      order: {
+        ...sales,
+        items: cOrders
+      }
     });
   } catch (error) {
     client.close();
@@ -47,6 +62,38 @@ async function handler(req, res){
   }
 
   return;
+}
+
+async function getOrCreateCustomer(name,db,authUser){
+  const findCustomer = await db.collection("customers")
+    .findOne({"name": name});
+
+  if(!findCustomer){
+    const customer = await db.collection("customers")
+      .insertOne({
+        name,
+        created_at: new Date(),
+        created_by: authUser?.name || (authUser?.name || "!!ERR")
+      })
+
+    return customer;
+  }
+
+  return findCustomer;
+
+}
+
+function createOrders(orders){
+  const remapOrders = orders.map((order)=>{
+    return {
+      menu_id: order.menu_id,
+      price: order.price,
+      quantity: order.quantity,
+      total: order.price * order.quantity,
+    }
+  });
+
+  return remapOrders;
 }
 
 export default handler;

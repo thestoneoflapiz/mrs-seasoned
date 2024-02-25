@@ -37,16 +37,40 @@ export default function SalesPage(){
   const [fMonth, setFMonth] = useState(dateNow.getMonth()+1);
   const [fYear, setFYear] = useState(dateNow.getFullYear());
   const [fSearch, setFSearch] = useState("");
+  const [fSearchBy, setFSearchBy] = useState("customer");
   const [fSort, setFSort] = useState({
     field: "created_at",
     sort: "desc"
   });
   
+  const searchByList = [
+    {
+      label: "Customer",
+      id: "customer",
+    },
+    {
+      label: "Order#",
+      id: "order_id",
+    },
+    {
+      label: "MOP",
+      id: "mop",
+    },
+    {
+      label: "Address",
+      id: "address",
+    },
+    {
+      label: "Remarks",
+      id: "remarks",
+    },
+  ];
+  
   const [data, setData] = useState({
     list: [],
-    headers: ["Order#","Sold To","QT","Price","D%","Total","MOP","Address","Sold Date","Remarks","Created"],
-    keys: ["order_id","customer","quantity","price","discount","total","mop","address","sold_date","remarks","created"],
-    sortable: ["order_id","customer","total","address","sold_date"],
+    headers: ["Order#","Sold To","D%","DF","Total","MOP","Address","Sold Date","Remarks","Created"],
+    keys: ["order_id","customer","discount","delivery_fee","total","mop","delivery_address","order_date","remarks","created"],
+    sortable: ["order_id","customer","total","delivery_address","order_date"],
     limit: 10,
     page: 1,
     pages: 0,
@@ -83,6 +107,7 @@ export default function SalesPage(){
       month: fMonth,
       year: fYear,
       search: fSearch,
+      search_by: fSearchBy,
       sort: fSort.sort,
       by: fSort.field,
       page: page,
@@ -201,9 +226,11 @@ export default function SalesPage(){
     setFSort(newSort);
   };
 
+  const handleSearchByChange = (e) => setFSearchBy(e.target.value);
+
   useEffect(()=>{
     getSales();
-  }, [page, fMonth, fYear, fSearch, fSort]);
+  }, [page, fMonth, fYear, fSearch, fSort, fSearchBy]);
 
   return(
     <> 
@@ -267,16 +294,7 @@ export default function SalesPage(){
                 {generateYears(years)}
               </Form.Select>
             </Col>
-            <Col md={4} xs={12} className="py-2">
-              <Form.Group className="mb-3" controlId="searchBy">
-                <Form.Control 
-                  type="text" 
-                  placeholder="Search by..." 
-                  onChange={(e)=>handleSearch(e)}
-                />
-              </Form.Group>
-            </Col>
-            <Col lg={2} md={3} sm={6} xs={6} className="py-2">
+            <Col lg={3} md={3} sm={6} xs={6} className="py-2">
               <Form.Select 
                 aria-label="Select Field" 
                 defaultValue=""
@@ -286,7 +304,7 @@ export default function SalesPage(){
                 {generateSortableFields()}
               </Form.Select>
             </Col>
-            <Col lg={2} md={3} sm={6} xs={6} className="py-2">
+            <Col lg={3} md={3} sm={6} xs={6} className="py-2">
               <Form.Select 
                 aria-label="Sort By" 
                 defaultValue="desc"
@@ -295,6 +313,27 @@ export default function SalesPage(){
                 <option value="asc">Asc</option>
                 <option value="desc">Desc</option>
               </Form.Select>
+            </Col>
+          </Row>
+          <Row>
+            <Col md={4} xs={12} className="py-2">
+              <Form.Select 
+                aria-label="" 
+                defaultValue={fSearchBy}
+                onChange={(e)=>handleSearchByChange(e)}
+              >
+                <option disabled>Select Month</option>
+                {searchByList.map((s,is)=><option key={is} value={s.id}>{s.label}</option>)}
+              </Form.Select>
+            </Col>
+            <Col md={4} xs={12} className="py-2">
+              <Form.Group className="mb-3" controlId="searchBy">
+                <Form.Control 
+                  type="text" 
+                  placeholder="Search by..." 
+                  onChange={(e)=>handleSearch(e)}
+                />
+              </Form.Group>
             </Col>
           </Row>
           <Row>

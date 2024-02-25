@@ -14,8 +14,8 @@ async function handler(req, res){
   const mongoQuery = {
     "$expr": {
       "$and": [
-        {"$eq": [{ "$year": "$bought_date" }, parseInt(query.year)]},
-        {"$eq": [{ "$month": "$bought_date" }, parseInt(query.month)]}
+        {"$eq": [{ "$year": "$order_date" }, parseInt(query.year)]},
+        {"$eq": [{ "$month": "$order_date" }, parseInt(query.month)]}
       ],
     },
   };
@@ -48,11 +48,11 @@ async function handler(req, res){
   const db = client.db();
   
   try {
-    const totalExpenses = await db.collection("sales").countDocuments(completeQuery);
+    const totalExpenses = await db.collection("orders").countDocuments(completeQuery);
     
     let pages = totalExpenses <= 10 ? 1 : totalExpenses / query.limit;
     pages = Math.ceil(pages);
-    const sales = await db.collection("sales")
+    const sales = await db.collection("orders")
       .find(completeQuery)
       .skip(parseInt(query.page)-1)
       .limit(parseInt(query.limit))
@@ -60,17 +60,11 @@ async function handler(req, res){
       .toArray();
 
     client.close();
+
+    const list = await remapList(sales, db);
+
     res.status(201).json({
-      list: sales.map((item)=>{
-        const dateFormatC = new Date(item.created_at);
-        const dateFormatD = new Date(item.bought_date);
-        item.bought_date = `${dateFormatD.getFullYear()}-${dateFormatD.getMonth()+1}-${dateFormatD.getDate()}`
-        item.created = {
-          by: item.created_by,
-          date: `${dateFormatC.getFullYear()}-${dateFormatC.getMonth()+1}-${dateFormatC.getDate()}`
-        }
-        return item;
-      }),
+      list,
       pagination: {
         total: totalExpenses,
         pages,
@@ -87,6 +81,32 @@ async function handler(req, res){
   }
 
   return;
+}
+
+async function getCustomer(db, _id){
+  const customer = await db.collection("customers")
+    .findOne({_id})
+  return customer;
+}
+
+async function remapList(sales, db){
+  let list = [];
+
+  for (let i = 0; i < sales.length; i++) {
+    const item = sales[i];
+    const dateFormatC = new Date(item.created_at);
+    const dateFormatD = new Date(item.order_date);
+    item.order_date = `${dateFormatD.getFullYear()}-${dateFormatD.getMonth()+1}-${dateFormatD.getDate()}`
+    item.created = {
+      by: item.created_by,
+      date: `${dateFormatC.getFullYear()}-${dateFormatC.getMonth()+1}-${dateFormatC.getDate()}`
+    }
+    const customer = await getCustomer(db, item.customer_id);
+    item.customer = customer?.name ?? "!!ERR";
+    list.push(item);
+  }
+
+  return list;
 }
 
 export default handler;

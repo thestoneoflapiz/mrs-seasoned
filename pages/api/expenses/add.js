@@ -8,7 +8,7 @@ async function handler(req, res){
 
   const data = JSON.parse(req.body);
   const { item_type, item, quantity, price, bought_date, bought_from, remarks } = data;
-  if(!item_type && !item && !quantity && !price){
+  if(!item_type || !item || !quantity || !price){
     res.status(422).json({
       message: "Please fill in required fields..."
     });

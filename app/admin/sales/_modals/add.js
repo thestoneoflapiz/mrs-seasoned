@@ -4,6 +4,7 @@ import { MOPs, ConstCurrentDateString } from "@/helpers/constants";
 import { useEffect, useRef, useState } from "react";
 import { Modal, Button, Form, Row, Col, Toast } from "react-bootstrap";
 import styles from "@/app/page.module.css";
+import { sum } from "lodash";
 
 export default function AddSalesModal({ show, onModalClose }){
   const mops = MOPs();
@@ -19,21 +20,26 @@ export default function AddSalesModal({ show, onModalClose }){
   const [orderId, setOrderId] = useState("");
   const orderDateRef = useRef();
   const customerRef = useRef();
-  const customerIdRef = useRef();
   const [orders, setOrders] = useState([]);
-  const [discount, setDiscount] = useState(0);
+  const discountRef = useRef();
   const [total, setTotal] = useState(0);
   const mopRef = useRef();
   const addressRef = useRef();
   const deliveryFeeRef = useRef();
   const remarksRef = useRef();
 
+  function resetState(){
+    setValidated(false);
+    setOrders([]);
+    setTotal(0);
+  }
 
   function handleAddFG(){
     const newOrders = [...orders];
     newOrders.push({
       uId: Math.random()*10,
       menu_id: "",
+      price: 0,
       quantity: 1
     });
 
@@ -47,7 +53,57 @@ export default function AddSalesModal({ show, onModalClose }){
   }
 
   function handleDynamicOrderChange(i,e){
+    const value = e.target.value;
 
+    switch (e.target.id) {
+      case `order_item_${i}`:
+        const item = menu.find((i)=>i._id==value);
+        setOrders((prev)=>{
+          prev[i].menu_id = item._id ?? value;
+          prev[i].price = item.price ?? 0;
+          return prev;
+        });
+        setTimeout(() => {
+          computeTotalAmountToPay();
+        }, 1000);
+      break;
+
+      case `order_quantity_${i}`:
+        setOrders((prev)=>{
+          prev[i].quantity = value;
+          return prev;
+        });
+        setTimeout(() => {
+          computeTotalAmountToPay();
+        }, 1000);
+      break;
+
+      default:
+      break;
+    }
+  }
+
+  function computeTotalAmountToPay(){
+    const currDiscount = parseFloat(discountRef.current?.value) ?? 0;
+    const currDF = parseFloat(deliveryFeeRef.current?.value) ?? 0;
+
+    if(orders.length==0) setTotal(currDF);
+
+    const orderPrices = orders.map((or)=>{
+      if(!or.menu_id) return 0;
+
+      const menuPrice = menu.find((m)=>m._id==or.menu_id);
+      if(!menuPrice) return 0;
+      return or.quantity * menuPrice.price;
+    })
+
+    const totalAmountOrders = sum(orderPrices);
+    let discounted = totalAmountOrders;
+    if(currDiscount){
+      discounted = totalAmountOrders * ((100-currDiscount)/100);
+    }
+
+    setTotal(discounted+currDF);
   }
 
   function generateOrderForms(){
@@ -65,6 +121,7 @@ export default function AddSalesModal({ show, onModalClose }){
               id={`order_item_${i}`}
               aria-label="Select MOP" 
               defaultValue={order.menu_id}
+              onChange={(e)=>handleDynamicOrderChange(i,e)}
             >
               <option disabled value="">Select Item</option>
               {menu.map((m, ii)=>{
@@ -85,6 +142,7 @@ export default function AddSalesModal({ show, onModalClose }){
               type="number"
               placeholder="quantity"
               defaultValue={order.quantity}
+              onChange={(e)=>handleDynamicOrderChange(i,e)}
             />
           </Form.Group>
           <Col xs={2} className="p-2">
@@ -106,6 +164,7 @@ export default function AddSalesModal({ show, onModalClose }){
   function handleModalClose(data){
     setValidated(false);
     onModalClose(data);
+    resetState();
   }
   
   const handleSubmit = (event) => {
@@ -115,16 +174,34 @@ export default function AddSalesModal({ show, onModalClose }){
       event.stopPropagation();
     }
 
-    // createItem();
+    createItem();
     
     setValidated(true);
   };
 
   async function createItem(){
+    const eDate = orderDateRef.current.value;
+    const eCustomer = customerRef.current.value;
+    const eDiscount = discountRef.current.value;
+    const eMop = mopRef.current.value;
+    const eAddress = addressRef.current.value;
+    const eFee = deliveryFeeRef.current.value;
+    const eRemarks = remarksRef.current.value;
 
     const response = await fetch("/api/sales/add", {
       method: "POST",
-      body: JSON.stringify({},{
+      body: JSON.stringify({
+        order_date: eDate,
+        order_id: orderId,
+        customer: eCustomer,
+        orders,
+        discount: parseFloat(eDiscount),
+        mop: eMop,
+        delivery_address: eAddress,
+        delivery_fee: parseFloat(eFee),
+        total: parseFloat(total),
+        remarks: eRemarks,
+      },{
         headers:{
           "Content-Type": "application/json"
         }
@@ -205,6 +282,10 @@ export default function AddSalesModal({ show, onModalClose }){
     }
   },[show])
 
+  useEffect(()=>{
+    computeTotalAmountToPay();
+  },[orders]);
+
   return (
     <>
       <Modal 
@@ -231,7 +312,7 @@ export default function AddSalesModal({ show, onModalClose }){
               <Toast.Body className="text-white">{toastMsg.message}</Toast.Body>
             </Toast>
             <Form noValidate validated={validated} onSubmit={handleSubmit}>
-              <Row className="mb-3 justify-content-center align-items-center">
+              <Row className="mb-3 align-items-center">
                 {/* Order Date */}
                 <Form.Group 
                   as={Col} 
@@ -262,6 +343,21 @@ export default function AddSalesModal({ show, onModalClose }){
                     defaultValue={orderId}
                   />
                 </Form.Group>
+                {/* Customer Name */}
+                <Form.Group 
+                  as={Col} 
+                  xs={12}
+                  className="mb-3"
+                >
+                  <Form.Label column="sm" className="text-secondary">Customer</Form.Label>
+                  <Form.Control
+                    autoFocus
+                    id="customer"
+                    type="text"
+                    placeholder="FN LN or alias"
+                    ref={customerRef}
+                  />
+                </Form.Group>
 
                 {/* Order Form Group */}
                 <Col xs={12} style={{textAlign: "right"}} className="px-3">
@@ -287,26 +383,14 @@ export default function AddSalesModal({ show, onModalClose }){
                   <Form.Label column="sm" className="text-secondary">Discount%</Form.Label>
                   <Form.Control
                     min={0.00}
+                    max={99.00}
                     step={0.01}
                     id="discount"
                     type="number"
                     placeholder="discount"
-                    defaultValue={discount}
-                  />
-                </Form.Group>
-                {/* Total */}
-                <Form.Group 
-                  as={Col} 
-                  xs={6}
-                  className="mb-3"
-                >
-                  <Form.Label column="sm" className="text-secondary">Total Amount to Pay</Form.Label>
-                  <Form.Control
-                    plaintext
-                    id="total"
-                    type="text"
-                    placeholder="total"
-                    defaultValue={total}
+                    defaultValue={0}
+                    ref={discountRef}
+                    onChange={computeTotalAmountToPay}
                   />
                 </Form.Group>
                 {/* Select MOP */}
@@ -346,16 +430,35 @@ export default function AddSalesModal({ show, onModalClose }){
                 {/* Delivery Fee */}
                 <Form.Group 
                   as={Col} 
-                  xs={12}
+                  xs={6}
                   className="mb-3"
                 >
                   <Form.Label column="sm" className="text-secondary">Delivery Fee</Form.Label>
                   <Form.Control
                     id="deliver_fee"
-                    min={0}
+                    min={0.00}
+                    max={99.00}
+                    step={0.01}
                     type="number"
-                    placeholder="0"
+                    placeholder="delivery fee"
+                    defaultValue={0}
                     ref={deliveryFeeRef}
+                    onChange={computeTotalAmountToPay}
+                  />
+                </Form.Group>
+                {/* Total */}
+                <Form.Group 
+                  as={Col} 
+                  xs={6}
+                  className="mb-3"
+                >
+                  <Form.Label column="sm" className="text-secondary">Total Amount to Pay</Form.Label>
+                  <Form.Control
+                    plaintext
+                    type="number"
+                    min={0}
+                    value={total}
+                    onChange={()=>console.log("trigger total")}
                   />
                 </Form.Group>
                 {/* Remarks */}

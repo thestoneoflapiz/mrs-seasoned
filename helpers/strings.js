@@ -2,11 +2,11 @@ export function leadingZeroes(num){
   // 4 digits only
   let place = 4;
   if(num < 10){
-    place = 3;
+    place = 4;
   }else if(num < 100){
-    place = 2;
+    place = 3;
   }else if(num < 1000){
-    place = 1;
+    place = 2;
   }
 
   if(num >= 1000){
