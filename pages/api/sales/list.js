@@ -51,17 +51,8 @@ async function handler(req, res){
   try {
     const totalSales = await db.collection("orders").countDocuments(completeQuery);
     
-    // let pages = totalSales <= 10 ? 1 : totalSales / query.limit;
-    // pages = Math.ceil(pages);
-
-    
-    client.close();
-    res.status(422).json({
-      message: "Something went wrong...",
-      totalSales
-    });
-
-    return;
+    let pages = totalSales <= 10 ? 1 : totalSales / query.limit;
+    pages = Math.ceil(pages);
 
     const sales = await db.collection("orders")
       .find(completeQuery)

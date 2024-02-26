@@ -9,8 +9,11 @@ import DeleteExpenseModal from "../_modals/delete";
 import { convertDateToString } from "@/helpers/date";
 import Loading from "@/components/loading";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 
 export default function ExpenseItem({ params }){
+  const route = useRouter();
+
   const [isLoading, setIsLoading] = useState(true);
   const [dtIsLoading, setDtIsLoading] = useState(true);
   const [page, setPage] = useState(1);
@@ -47,6 +50,21 @@ export default function ExpenseItem({ params }){
     }
     setShowEditModal(false)
     setShowDeleteModal(false)
+
+    if(data && data?.mode == "delete"){
+      
+      setToastMsg((prev)=>{
+        const newState = prev;
+        newState.variant = "info";
+        newState.message = "Redirecting to Expenses page...";
+        return newState;
+      });
+      setShowToast(true);
+
+      setTimeout(() => {
+        route.push("/admin/expenses");
+      }, 2500);
+    }
   };
 
   async function getExpenseItemDetails(){
@@ -88,7 +106,7 @@ export default function ExpenseItem({ params }){
       ne_id: params.id,
       search: item,
       sort: "desc",
-      by: "created_at",
+      by: "bought_date",
       page: page,
       limit: similarData.limit,
     });

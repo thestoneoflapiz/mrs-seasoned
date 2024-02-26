@@ -85,7 +85,8 @@ export default function EditExpenseModal({ show, onModalClose, data }){
 
     handleModalClose({
       variant: "success",
-      message: data.message || "Update success!"
+      message: data.message || "Update success!",
+      mode: "edit"
     });
   }
 

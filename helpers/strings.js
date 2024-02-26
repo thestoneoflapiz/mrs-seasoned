@@ -15,3 +15,13 @@ export function leadingZeroes(num){
   
   return String(num).padStart(place,"0");
 }
+
+export function ledMonthNum(month){
+  let place = 2;
+  if(month < 10){
+    place = 2;
+  }else{
+    place = 1;
+  }
+  return String(month).padStart(place,"0");
+}

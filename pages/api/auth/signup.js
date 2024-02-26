@@ -29,7 +29,7 @@ async function handler(req, res){
         username: username,
         name: username,
         password: hashed,
-        created_at: moment().format(),
+        created_at: moment().format("YYYY-MM-DD HH:mm:ss"),
         created_by: "system",
       });
   

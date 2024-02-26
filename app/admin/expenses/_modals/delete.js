@@ -43,7 +43,8 @@ export default function DeleteExpenseModal({ show, onModalClose, data }){
 
     handleModalClose({
       variant: "success",
-      message: data.message || "Delete success!"
+      message: data.message || "Delete success!",
+      mode: "delete"
     });
   }
 

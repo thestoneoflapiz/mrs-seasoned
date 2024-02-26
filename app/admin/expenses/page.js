@@ -38,7 +38,7 @@ export default function ExpensesPage(){
   const [fYear, setFYear] = useState(parseInt(moment().format("YYYY")));
   const [fSearch, setFSearch] = useState("");
   const [fSort, setFSort] = useState({
-    field: "created_at",
+    field: "bought_date",
     sort: "desc"
   });
   
@@ -165,15 +165,20 @@ export default function ExpensesPage(){
     switch (type) {
       case "month":
         setFMonth(value);
+        setPage(1);
       break;
     
       default:
         setFYear(value);
+        setPage(1);
       break;
     }
   }
 
-  const handleSearch = (e) => debounceFn(e.target.value);
+  const handleSearch = (e) => {
+    debounceFn(e.target.value)
+    setPage(1);
+  };
   const debounceFn = useCallback(debounce((value)=>setFSearch(value), 500), []);
 
   const handleSort = (type, e) => {

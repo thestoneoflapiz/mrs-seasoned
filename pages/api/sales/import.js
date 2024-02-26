@@ -78,7 +78,7 @@ function remapOrders(data, authUser, menu, customers){
   forEach(groupedOrders,function(orders, order_id){
     const fOrder = orders[0]
     const fCustomer = customers.find((c)=>c.name == fOrder[2]);
-    const fDate = moment(`${fOrder[0]} ${fOrder[1]}`).format();
+    const fDate = moment(`${fOrder[0]} ${fOrder[1]}`).format("YYYY-MM-DD HH:mm:ss");
     const fDiscount = fOrder[6] == "" ? 0 : parseFloat(fOrder[6]);
     const fFee = fOrder[9] == "" ? 0 : parseFloat(fOrder[9]);
 
@@ -106,7 +106,7 @@ function remapOrders(data, authUser, menu, customers){
       total: fTotal,
       mop: fOrder[8],
       remarks: fOrder[12],
-      created_at: moment().format(),
+      created_at: moment().format("YYYY-MM-DD HH:mm:ss"),
       created_by: authUser?.name || (authUser?.username || "!!ERR")
     })
   });
@@ -134,7 +134,7 @@ async function getOrCreateCustomers(data, db, authUser){
     const remap = noDCustomers.map((c)=>{
       return {
         name: c,
-        created_at: moment().format(),
+        created_at: moment().format("YYYY-MM-DD HH:mm:ss"),
         created_by: authUser?.name || (authUser?.username || "!!ERR")
       }
     });

@@ -1,4 +1,5 @@
 import { connectToDatabase } from "@/helpers/db";
+import { ledMonthNum } from "@/helpers/strings";
 import moment from "moment";
 import { BSON } from "mongodb";
 
@@ -11,14 +12,12 @@ async function handler(req, res){
   const sortObj = {};
   sortObj[query?.by] = query?.sort=="asc"?1:-1;
  
-  //  month year search and sort field and by
+  const dateString = `${query.year}-${ledMonthNum(parseInt(query.month))}`;
+  console.log(dateString);
   const mongoQuery = {
-    "$expr": {
-      "$and": [
-        {"$eq": [{ "$year": "$bought_date" }, parseInt(query.year)]},
-        {"$eq": [{ "$month": "$bought_date" }, parseInt(query.month)]}
-      ],
-    },
+    "bought_date": {
+      "$regex": dateString,
+    }
   };
 
   const mongoSearch = {$text: {$search: query.search}};
@@ -55,7 +54,7 @@ async function handler(req, res){
     pages = Math.ceil(pages);
     const expenses = await db.collection("expenses")
       .find(completeQuery)
-      .skip(parseInt(query.page)-1)
+      .skip((parseInt(query.page)-1)*parseInt(query.limit))
       .limit(parseInt(query.limit))
       .sort(sortObj)
       .toArray();

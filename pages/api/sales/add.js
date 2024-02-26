@@ -42,7 +42,7 @@ async function handler(req, res){
       delivery_fee,
       total,
       remarks,
-      created_at: moment().format(),
+      created_at: moment().format("YYYY-MM-DD HH:mm:ss"),
       created_by: authUser?.name || (authUser?.name || "!!ERR")
     })
 
@@ -73,7 +73,7 @@ async function getOrCreateCustomer(name,db,authUser){
     const customer = await db.collection("customers")
       .insertOne({
         name,
-        created_at: moment().format(),
+        created_at: moment().format("YYYY-MM-DD HH:mm:ss"),
         created_by: authUser?.name || (authUser?.name || "!!ERR")
       })
 

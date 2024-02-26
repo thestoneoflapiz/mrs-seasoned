@@ -28,7 +28,7 @@ async function handler(req, res){
       bought_date: moment(d[4]).format(),
       bought_from: d[5],
       remarks: d[6],
-      created_at: moment().format(),
+      created_at: moment().format("YYYY-MM-DD HH:mm:ss"),
       created_by: authUser?.name || (authUser?.username || "!!ERR")
     }
   });
