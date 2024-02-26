@@ -252,27 +252,25 @@ export default function AddSalesModal({ show, onModalClose, data}){
 
     const { list } = data;
     setMenu(list);
+
+    // edit setTotal && setOrders
+    const newOrders = itemDetails.orders.map((o)=>{
+      return {
+        uId: Math.random()*10,
+        menu_id: o.menu_id,
+        price: o.price,
+        quantity: o.quantity
+      }
+    });
+
+    setOrders(newOrders);
+    setTotal(itemDetails?.total || 0);
   }
   
   useEffect(()=>{
     if(show){
       getMenu();
-      
-      const newOrders = itemDetails.orders.map((o)=>{
-        return {
-          uId: Math.random()*10,
-          menu_id: o.menu_id,
-          price: o.price,
-          quantity: o.quantity
-        }
-      });
-
-      setOrders(newOrders);
     }
-
-      
-      setTotal(itemDetails?.total || 0);
-
   },[show])
 
   useEffect(()=>{

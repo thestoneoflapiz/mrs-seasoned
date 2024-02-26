@@ -9,7 +9,7 @@ async function handler(req, res){
   const client = await connectToDatabase();
   const db = client.db();
   const year = moment().format("YYYY");
-  const month = moment().format("DD");
+  const month = moment().format("M");
 
   try {
     const ordersTotality = await db.collection("orders").countDocuments( {
@@ -22,7 +22,7 @@ async function handler(req, res){
     client.close();
     res.status(201).json({
       message: "Generated!",
-      order_id: `${ledByZeroOrder}${month}-${year}`
+      order_id: `${ledByZeroOrder}${month}${year}`
     });
   } catch (error) {
     res.status(422).json({

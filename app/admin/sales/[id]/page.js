@@ -23,7 +23,7 @@ export default function SalesItem({ params }){
   const [itemDetails, setItemDetails] = useState(null)
   const [salesHistory, setSalesHistory] = useState({
     list: [],
-    headers: ["Order#","Sold To","D%","DF","Total","MOP","Address","Sold Date","Remarks","Created"],
+    headers: ["Order#","Sold To","D%","DF","Total","MOP","Address","Order Date","Remarks","Created"],
     keys: ["order_id","customer","discount","delivery_fee","total","mop","delivery_address","order_date","remarks","created"],
     limit: 10,
     page: 1,
@@ -104,7 +104,7 @@ export default function SalesItem({ params }){
       search: item,
       search_by: "customer",
       sort: "desc",
-      by: "created_at",
+      by: "order_date",
       page: page,
       limit: salesHistory.limit,
     });
@@ -166,6 +166,53 @@ export default function SalesItem({ params }){
         setPage(count)
       break;
     }
+  }
+
+  function generateOrders(orders){
+    const elOrders = orders.map((o,i)=>{
+      return(
+        <div key={i+`fgOrders`} className="row">
+          <Form.Group
+            as={Col}
+            xs={4}
+            className="mb-3"
+          >
+            <Form.Label column="sm">Item #{i+1}</Form.Label>
+            <Form.Control
+              disabled
+              type="text"
+              value={o.menu}
+            />
+          </Form.Group>
+          <Form.Group
+            as={Col}
+            xs={4}
+            className="mb-3"
+          >
+            <Form.Label column="sm">Quantity</Form.Label>
+            <Form.Control
+              disabled
+              type="text"
+              value={o.quantity}
+            />
+          </Form.Group>
+          <Form.Group
+            as={Col}
+            xs={4}
+            className="mb-3"
+          >
+            <Form.Label column="sm">Total</Form.Label>
+            <Form.Control
+              disabled
+              type="text"
+              value={o.total}
+            />
+          </Form.Group>
+        </div>
+      )
+    })
+
+    return elOrders;
   }
 
   useEffect(()=>{
@@ -249,10 +296,28 @@ export default function SalesItem({ params }){
                   value={itemDetails?.order_id || ""}
                 />
               </Form.Group>
+              {/* Customer */}
+              <Form.Group 
+                as={Col} 
+                xs={12}
+                className="mb-3"
+              >
+                <Form.Label column="sm">Customer</Form.Label>
+                <Form.Control
+                  disabled
+                  type="text"
+                  value={itemDetails?.customer || ""}
+                />
+              </Form.Group>
+
+              <Col xs={12} className={styles.c_orders_wrapper}>
+                {generateOrders(itemDetails?.orders || [])}
+              </Col>
+              
               {/* Discount */}
               <Form.Group 
                 as={Col}
-                xs={6}
+                xs={4}
                 className="mb-3"
               >
                 <Form.Label column="sm">Discount</Form.Label>
@@ -265,7 +330,7 @@ export default function SalesItem({ params }){
               {/* Delivery Fee */}
               <Form.Group 
                 as={Col}
-                xs={6}
+                xs={4}
                 className="mb-3"
                 >
                 <Form.Label column="sm">Delivery Fee</Form.Label>
@@ -278,7 +343,7 @@ export default function SalesItem({ params }){
               {/* Total */}
               <Form.Group 
                 as={Col}
-                xs={6}
+                xs={4}
                 className="mb-3"
                 >
                 <Form.Label column="sm">Total</Form.Label>
@@ -291,7 +356,8 @@ export default function SalesItem({ params }){
               {/* MOP */}
               <Form.Group 
                 as={Col}
-                xs={6}
+                sm={4}
+                xs={12}
                 className="mb-3"
                 >
                 <Form.Label column="sm">MOP</Form.Label>
