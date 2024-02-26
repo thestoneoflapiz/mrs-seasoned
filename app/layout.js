@@ -10,7 +10,7 @@ const inter = Inter({ subsets: ["latin"] });
 
 export const metadata = {
   title: "Mrs. Seasoned",
-  description: "EXPENSE, INVENTORY, SALES, AND REPORTING SYSTEM",
+  description: "EXPENSE, SALES, AND REPORTING SYSTEM",
 };
 
 export default async function RootLayout({ children }) {

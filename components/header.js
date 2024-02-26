@@ -17,10 +17,6 @@ export default function Header({ pageTitle, activePage="" }){
       link: "/admin/expenses", 
     },
     {
-      name: "Inventory",
-      link: "/admin/inventory", 
-    },
-    {
       name: "Sales",
       link: "/admin/sales", 
     },
