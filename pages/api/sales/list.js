@@ -35,13 +35,22 @@ async function handler(req, res){
 
     switch (searchBy) {
       case "customer":
-        const fsCustomer = await db.collection("customers").findOne({name: { "$eq": query.search }});
+        const fsCustomer = await db.collection("customers").findOne({"name": { "$eq": query.search }});
         completeQuery = {...completeQuery, "customer_id": { "$eq": fsCustomer?._id || "" }}
+      break;
+      case "order_id":
+        completeQuery = {...completeQuery, "order_id": { "$eq": query.search }};
+      break;
+      case "mop":
+        completeQuery = {...completeQuery, "mop": { "$eq": query.search }};
+      break;
+      case "address":
+      case "remarks":
+        const mongoSearch = {$text: {$search: query.search}};
+        completeQuery = {...completeQuery, ...mongoSearch}
       break;
     
       default:
-        const mongoSearch = {$text: {$search: query.search}};
-        completeQuery = {...completeQuery, ...mongoSearch}
       break;
     }
   }
@@ -66,9 +75,9 @@ async function handler(req, res){
 
     const sales = await db.collection("orders")
       .find(completeQuery)
+      .sort(sortObj)
       .skip((parseInt(query.page)-1)*parseInt(query.limit))
       .limit(parseInt(query.limit))
-      .sort(sortObj)
       .toArray();
 
     client.close();
@@ -90,6 +99,7 @@ async function handler(req, res){
         pages,
         page: parseInt(query.page),
         limit: parseInt(query.limit),
+        sortObj
       }
     });
   } catch (error) {

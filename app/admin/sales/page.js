@@ -68,9 +68,9 @@ export default function SalesPage(){
   
   const [data, setData] = useState({
     list: [],
-    headers: ["Order#","Sold To","D%","DF","Total","MOP","Address","Sold Date","Remarks","Created"],
+    headers: ["Order#","Sold To","D%","DF","Total","MOP","Address","Order Date","Remarks","Created"],
     keys: ["order_id","customer","discount","delivery_fee","total","mop","delivery_address","order_date","remarks","created"],
-    sortable: ["order_id","customer","total","delivery_address","order_date"],
+    sortable: ["order_id","total","delivery_address","order_date"],
     limit: 10,
     page: 1,
     pages: 0,
@@ -95,7 +95,7 @@ export default function SalesPage(){
 
   function generateSortableFields(){
     const sortable = data.sortable.map((sort, i)=>{
-      return (<option key={i} value={sort}>{data.headers[i]}</option>)
+      return (<option key={i} value={sort}>{sort.replace("_", " ")}</option>)
     });
 
     return sortable;
@@ -128,6 +128,16 @@ export default function SalesPage(){
         return newState;
       });
 
+      setData((prev)=>{
+        const newState = prev;
+        newState.list = [];
+        newState.limit = 10;
+        newState.page = 1;
+        newState.pages = 0;
+        newState.total = 0;
+        return newState;
+      });
+      
       setShowToast(true);
       setTimeout(() => {
         setIsLoading(false);

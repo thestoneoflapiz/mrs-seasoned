@@ -96,6 +96,16 @@ export default function ExpensesPage(){
     const result = await response.json();
 
     if(!response.ok){
+      setData((prev)=>{
+        const newState = prev;
+        newState.list = [];
+        newState.limit = 10;
+        newState.page = 1;
+        newState.pages = 0;
+        newState.total = 0;
+        return newState;
+      });
+      
       setToastMsg((prev)=>{
         const newState = prev;
         newState.variant = "danger";
