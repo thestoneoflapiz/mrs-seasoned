@@ -13,7 +13,7 @@ async function handler(req, res){
   
   try {
     const nid = new BSON.ObjectId(query._id)
-    const saleItem = await db.collection("sales").findOne({_id: nid, deleted_at: { "$exists": false}});
+    const saleItem = await db.collection("orders").findOne({_id: nid, deleted_at: { "$exists": false}});
 
     if(!saleItem){
       client.close();
@@ -24,6 +24,9 @@ async function handler(req, res){
       return;
     }
 
+    const customer = await db.collection("customers").findOne({"_id": saleItem.customer_id});
+
+    saleItem.customer = customer?.name || "!!ERR";
     client.close();
     res.status(201).json({
       message: "Data retrieved!",

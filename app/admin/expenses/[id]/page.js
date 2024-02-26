@@ -52,7 +52,6 @@ export default function ExpenseItem({ params }){
     setShowDeleteModal(false)
 
     if(data && data?.mode == "delete"){
-      
       setToastMsg((prev)=>{
         const newState = prev;
         newState.variant = "info";

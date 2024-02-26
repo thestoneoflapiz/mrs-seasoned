@@ -1,4 +1,5 @@
 import { connectToDatabase } from "@/helpers/db";
+import { ledMonthNum } from "@/helpers/strings";
 import moment from "moment";
 import { BSON } from "mongodb";
 
@@ -10,27 +11,39 @@ async function handler(req, res){
   const { query } = req;
   const sortObj = {};
   sortObj[query?.by] = query?.sort=="asc"?1:-1;
- 
-  //  month year search and sort field and by
-  const mongoQuery = {
-    "$expr": {
-      "$and": [
-        {"$eq": [{ "$year": "$order_date" }, parseInt(query.year)]},
-        {"$eq": [{ "$month": "$order_date" }, parseInt(query.month)]}
-      ],
-    },
-  };
-
 
   let completeQuery = {};
 
   if(query.year && query.month){
+    const dateString = `${query.year}-${ledMonthNum(parseInt(query.month))}`;
+    const mongoQuery = {
+      "order_date": {
+        "$regex": dateString,
+      }
+    };
     completeQuery = {...completeQuery, ...mongoQuery}
   }
   
+  const client = await connectToDatabase();
+  const db = client.db();
+
   if(query.search){
-    // const mongoSearch = {$text: {$search: query.search}};
-    // completeQuery = {...completeQuery, ...mongoSearch}
+    let searchBy = "order_id";
+    if(query.search_by){
+      searchBy = query.search_by;
+    }
+
+    switch (searchBy) {
+      case "customer":
+        const fsCustomer = await db.collection("customers").findOne({name: { "$eq": query.search }});
+        completeQuery = {...completeQuery, "customer_id": { "$eq": fsCustomer?._id || "" }}
+      break;
+    
+      default:
+        const mongoSearch = {$text: {$search: query.search}};
+        completeQuery = {...completeQuery, ...mongoSearch}
+      break;
+    }
   }
 
   if(query?.ne_id){
@@ -44,9 +57,6 @@ async function handler(req, res){
       "$exists": false,
     }
   }
-
-  const client = await connectToDatabase();
-  const db = client.db();
   
   try {
     const totalSales = await db.collection("orders").countDocuments(completeQuery);

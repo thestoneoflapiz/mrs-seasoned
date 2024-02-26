@@ -16,7 +16,7 @@ export default function DeleteExpenseModal({ show, onModalClose, data }){
   }
   
   async function deleteExpense(){
-    const response = await fetch("/api/expenses/delete", {
+    const response = await fetch("/api/sales/delete", {
       method: "POST",
       body: JSON.stringify({
         _id: itemDetails._id
@@ -43,7 +43,8 @@ export default function DeleteExpenseModal({ show, onModalClose, data }){
 
     handleModalClose({
       variant: "success",
-      message: data.message || "Delete success!"
+      message: data.message || "Delete success!",
+      mode: "delete"
     });
   }
 
@@ -72,7 +73,7 @@ export default function DeleteExpenseModal({ show, onModalClose, data }){
             >
               <Toast.Body className="text-white">{toastMsg.message}</Toast.Body>
             </Toast>
-            <p>Are you sure to delete {data?.title && "expense item"}?</p>
+            <p>Are you sure to delete {itemDetails?.order_id || "this sales"}?</p>
             <Row className="justify-content-end align-items-center">
               <Col sm={3} xs={4}>
                 <Button type="button" variant="primary" onClick={deleteExpense}>Yes</Button>

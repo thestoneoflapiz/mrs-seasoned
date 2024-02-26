@@ -7,7 +7,7 @@ import Link from "next/link";
 export default function Datatable({ dataList, pageLink="", onPaginate }){
 
   function generateFields(){
-    const arrOfTitles = ["title", "name", "item"];
+    const arrOfTitles = ["title", "name", "item", "order_id"];
 
     const fields = dataList.list.map((li, i)=>{
       const cells = dataList.keys.map((cell,i)=>{

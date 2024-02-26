@@ -9,11 +9,12 @@ async function handler(req, res){
   const client = await connectToDatabase();
   const db = client.db();
   const year = moment().format("YYYY");
+  const month = moment().format("DD");
 
   try {
-    const ordersTotality = await db.collection("orders").countDocuments({ 
-      $expr: {
-        $eq: [{ $year: "$order_date" }, parseInt(year)]
+    const ordersTotality = await db.collection("orders").countDocuments( {
+      "order_date": {
+        "$regex": year,
       }
     });
 
@@ -21,7 +22,7 @@ async function handler(req, res){
     client.close();
     res.status(201).json({
       message: "Generated!",
-      order_id: `${ledByZeroOrder}${year}`
+      order_id: `${ledByZeroOrder}${month}-${year}`
     });
   } catch (error) {
     res.status(422).json({

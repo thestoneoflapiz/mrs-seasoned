@@ -9,12 +9,19 @@ async function handler(req, res){
   }
 
   const data = JSON.parse(req.body);
-  const { _id, item_type, item, quantity, price, bought_date, bought_from, remarks } = data;
-  if(!_id && !item_type && !item && !quantity && !price){
+
+  const { _id, order_date, order_id, customer, orders, 
+    discount, mop, delivery_address, delivery_fee,
+    total, remarks } = data;
+
+  if(
+    !_id || !order_date || !order_id || !customer 
+    || (!orders || orders.length == 0) || !delivery_address 
+    || !total
+  ){
     res.status(422).json({
       message: "Please fill in required fields..."
     });
-
     return;
   }
 
@@ -24,15 +31,20 @@ async function handler(req, res){
 
   const nid = new BSON.ObjectId(_id);
   try {
-    const sales = await db.collection("sales").updateOne({ _id: nid}, {
+    const cCustomer = await getOrCreateCustomer(customer, db, authUser);
+    const cOrders = createOrders(orders);
+    
+
+    const sales = await db.collection("orders").updateOne({ _id: nid}, {
       $set: {
-        item_type,
-        item,
-        quantity,
-        price,
-        total: parseFloat(quantity)*parseFloat(price),
-        bought_date: moment(bought_date).format(),
-        bought_from,
+        order_date: moment(order_date).format(),
+        customer_id: cCustomer._id ?? cCustomer.insertedId,
+        "orders": cOrders,
+        discount,
+        mop,
+        delivery_address,
+        delivery_fee,
+        total,
         remarks,
         updated_at: moment().format(),
         updated_by: authUser.username || "!!ERR"
@@ -41,7 +53,8 @@ async function handler(req, res){
 
     client.close();
     res.status(201).json({
-      message: "Item updated!"
+      message: "Item updated!",
+      sales
     });
   } catch (error) {
     client.close();
@@ -52,6 +65,39 @@ async function handler(req, res){
   }
 
   return;
+}
+
+async function getOrCreateCustomer(name,db,authUser){
+  const findCustomer = await db.collection("customers")
+    .findOne({"name": name});
+
+  if(!findCustomer){
+    const customer = await db.collection("customers")
+      .insertOne({
+        name,
+        created_at: moment().format("YYYY-MM-DD HH:mm:ss"),
+        created_by: authUser?.name || (authUser?.name || "!!ERR")
+      })
+
+      console.log(customer);
+    return customer;
+  }
+
+  return findCustomer;
+
+}
+
+function createOrders(orders){
+  const remapOrders = orders.map((order)=>{
+    return {
+      menu_id: order.menu_id,
+      price: order.price,
+      quantity: order.quantity,
+      total: order.price * order.quantity,
+    }
+  });
+
+  return remapOrders;
 }
 
 export default handler;
