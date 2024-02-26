@@ -9,8 +9,8 @@ async function handler(req, res){
   }
 
   const data = JSON.parse(req.body);
-  const { _id, item_type, item, quantity, price, bought_date, bought_from, remarks } = data;
-  if(!_id && !item_type && !item && !quantity && !price){
+  const { _id, name, quantity, price } = data;
+  if(!_id && !name && !price){
     res.status(422).json({
       message: "Please fill in required fields..."
     });
@@ -26,18 +26,11 @@ async function handler(req, res){
   try {
     const menu = await db.collection("menu").updateOne({ _id: nid}, {
       $set: {
-        item_type,
-        item,
-        quantity,
+        name,
         price,
-        total: parseFloat(quantity)*parseFloat(price),
-        bought_date: moment(bought_date).format(),
-        bought_from,
-        remarks,
         updated_at: moment().format(),
         updated_by: authUser.username || "!!ERR"
-      },
-      $currentDate: { lastUpdated: true }
+      }
     })
 
     client.close();

@@ -20,20 +20,14 @@ async function handler(req, res){
   
   let menu = data.map((d)=>{
     return{
-      item_type: d[0],
-      item: d[1],
-      quantity: parseFloat(d[2]),
-      price: parseFloat(d[3]),
-      total: parseFloat(d[2])*parseFloat(d[3]),
-      bought_date: moment(d[4]).format(),
-      bought_from: d[5],
-      remarks: d[6],
+      name: d[0],
+      price: parseFloat(d[1]),
       created_at: moment().format("YYYY-MM-DD HH:mm:ss"),
       created_by: authUser?.name || (authUser?.username || "!!ERR")
     }
   });
 
-  menu = menu.filter((d)=>d.item_type!="");
+  menu = menu.filter((d)=>d.name!="");
 
   const client = await connectToDatabase();
   const db = client.db();

@@ -36,8 +36,7 @@ async function handler(req, res){
         remarks,
         updated_at: moment().format(),
         updated_by: authUser.username || "!!ERR"
-      },
-      $currentDate: { lastUpdated: true }
+      }
     })
 
     client.close();

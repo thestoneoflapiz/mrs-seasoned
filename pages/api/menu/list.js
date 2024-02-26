@@ -1,4 +1,5 @@
 import { connectToDatabase } from "@/helpers/db";
+import moment from "moment";
 
 async function handler(req, res){
   if(req.method !== "GET"){
@@ -40,14 +41,14 @@ async function paginatedList(req, res){
   const client = await connectToDatabase();
   const db = client.db();
   
-  try {
+  // try {
     const totalExpenses = await db.collection("menu").countDocuments(completeQuery);
     
     let pages = totalExpenses <= 10 ? 1 : totalExpenses / query.limit;
     pages = Math.ceil(pages);
     const menu = await db.collection("menu")
       .find(completeQuery)
-      .skip(parseInt(query.page)-1)
+      .skip((parseInt(query.page)-1)*parseInt(query.limit))
       .limit(parseInt(query.limit))
       .sort(sortObj)
       .toArray();
@@ -69,13 +70,13 @@ async function paginatedList(req, res){
         limit: parseInt(query.limit),
       }
     });
-  } catch (error) {
-    client.close();
-    res.status(422).json({
-      message: "Something went wrong...",
-      error
-    });
-  }
+  // } catch (error) {
+  //   client.close();
+  //   res.status(422).json({
+  //     message: "Something went wrong...",
+  //     error
+  //   });
+  // }
 
   return;
 }

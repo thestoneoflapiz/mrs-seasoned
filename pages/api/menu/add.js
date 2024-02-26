@@ -8,8 +8,8 @@ async function handler(req, res){
   }
 
   const data = JSON.parse(req.body);
-  const { item_type, item, quantity, price, bought_date, bought_from, remarks } = data;
-  if(!item_type || !item || !quantity || !price){
+  const { name, price } = data;
+  if(!name || !price){
     res.status(422).json({
       message: "Please fill in required fields..."
     });
@@ -23,14 +23,8 @@ async function handler(req, res){
 
   try {
     const menu = await db.collection("menu").insertOne({
-      item_type,
-      item,
-      quantity: parseFloat(quantity),
+      name,
       price: parseFloat(price),
-      total: parseFloat(quantity)*parseFloat(price),
-      bought_date: moment(bought_date).format(),
-      bought_from,
-      remarks,
       created_at: moment().format("YYYY-MM-DD HH:mm:ss"),
       created_by: authUser?.name || (authUser?.name || "!!ERR")
     })

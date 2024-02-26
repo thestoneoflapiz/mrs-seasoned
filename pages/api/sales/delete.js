@@ -28,8 +28,7 @@ async function handler(req, res){
       $set: {
         deleted_at: moment().format(),
         deleted_by: authUser.username || "!!ERR"
-      },
-      $currentDate: { lastUpdated: true }
+      }
     })
 
     client.close();

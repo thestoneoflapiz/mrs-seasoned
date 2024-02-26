@@ -16,13 +16,8 @@ export default function EditMenuModal({ show, onModalClose, data }){
 
   const item_types = ItemTypes();
 
-  const itemTypeRef = useRef();
   const itemRef = useRef();
-  const quantityRef = useRef();
   const priceRef = useRef();
-  const boughtDateRef = useRef();
-  const boughtFromRef = useRef();
-  const remarksRef = useRef();
 
   function handleModalClose(data){
     setValidated(false);
@@ -43,25 +38,15 @@ export default function EditMenuModal({ show, onModalClose, data }){
 
   async function editItem(){
 
-    const enteredType = itemTypeRef.current.value;
     const enteredItem = itemRef.current.value;
-    const enteredQT = quantityRef.current.value;
     const enteredPrice = priceRef.current.value;
-    const enteredAt = boughtDateRef.current.value;
-    const enteredFrom = boughtFromRef.current.value;
-    const enteredRemarks = remarksRef.current.value;
 
     const response = await fetch("/api/menu/edit", {
       method: "POST",
       body: JSON.stringify({
         _id: itemDetails._id,
-        item_type: enteredType,
-        item: enteredItem,
-        quantity: enteredQT,
+        name: enteredItem,
         price: enteredPrice,
-        bought_date: enteredAt,
-        bought_from: enteredFrom,
-        remarks: enteredRemarks,
       },{
         headers:{
           "Content-Type": "application/json"
@@ -117,24 +102,6 @@ export default function EditMenuModal({ show, onModalClose, data }){
             </Toast>
             <Form noValidate validated={validated} onSubmit={handleSubmit}>
               <Row className="mb-3">
-                {/* Select Type */}
-                <Form.Group
-                  as={Col}
-                  xs={12}
-                  className="mb-3"
-                >
-                  <Form.Select 
-                    aria-label="Select Type" 
-                    required
-                    ref={itemTypeRef}
-                    defaultValue={itemDetails.item_type}
-                  >
-                    <option disabled value="">Select Type</option>
-                    {item_types.map((type, i)=>{
-                      return (<option value={type} key={i}>{type}</option>)
-                    })}
-                  </Form.Select>
-                </Form.Group>
                 {/* Item */}
                 <Form.Group 
                   as={Col} 
@@ -148,30 +115,13 @@ export default function EditMenuModal({ show, onModalClose, data }){
                     type="text"
                     placeholder="item"
                     ref={itemRef}
-                    defaultValue={itemDetails.item}
-                  />
-                </Form.Group>
-                {/* Quantity */}
-                <Form.Group 
-                  as={Col}
-                  xs={6}
-                  className="mb-3"
-                >
-                  <Form.Control
-                    required
-                    min={1.00}
-                    step={0.01}
-                    id="quantity"
-                    type="number"
-                    placeholder="quantity"
-                    ref={quantityRef}
-                    defaultValue={itemDetails.quantity}
+                    defaultValue={itemDetails.name}
                   />
                 </Form.Group>
                 {/* Price */}
                 <Form.Group 
                   as={Col}
-                  xs={6}
+                  xs={12}
                   className="mb-3"
                 >
                   <Form.Control
@@ -183,49 +133,6 @@ export default function EditMenuModal({ show, onModalClose, data }){
                     placeholder="price"
                     ref={priceRef}
                     defaultValue={itemDetails.price}
-                  />
-                </Form.Group>
-                {/* Date Bought */}
-                <Form.Group 
-                  as={Col} 
-                  xs={12}
-                  className="mb-3"
-                >
-                  <Form.Control
-                    required
-                    id="bought_date"
-                    type="text"
-                    placeholder="date bought"
-                    ref={boughtDateRef}
-                    defaultValue={convertDateToString(itemDetails.bought_date)}
-                  />
-                </Form.Group>
-                {/* Bought From */}
-                <Form.Group 
-                  as={Col} 
-                  xs={12}
-                  className="mb-3"
-                >
-                  <Form.Control
-                    id="bought_from"
-                    type="text"
-                    placeholder="bought from"
-                    ref={boughtFromRef}
-                    defaultValue={itemDetails.bought_from}
-                  />
-                </Form.Group>
-                {/* Remarks */}
-                <Form.Group 
-                  as={Col} 
-                  xs={12}
-                >
-                  <Form.Control 
-                    as="textarea" 
-                    rows={2} 
-                    id="remarks" 
-                    placeholder="remarks"
-                    ref={remarksRef}
-                    defaultValue={itemDetails.remarks}
                   />
                 </Form.Group>
               </Row>

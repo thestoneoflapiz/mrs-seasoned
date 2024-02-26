@@ -73,7 +73,7 @@ export default function DeleteMenuModal({ show, onModalClose, data }){
             >
               <Toast.Body className="text-white">{toastMsg.message}</Toast.Body>
             </Toast>
-            <p>Are you sure to delete {data?.title && "menu item"}?</p>
+            <p>Are you sure to delete {itemDetails?.item || "menu item"}?</p>
             <Row className="justify-content-end align-items-center">
               <Col sm={3} xs={4}>
                 <Button type="button" variant="primary" onClick={deleteMenu}>Yes</Button>

@@ -25,8 +25,8 @@ export default function MenuItem({ params }){
   const [itemDetails, setItemDetails] = useState(null)
   const [similarData, setSimilarData] = useState({
     list: [],
-    headers: ["Type","Item","QT","Price","Total","From","Remarks","Date","Created"],
-    keys: ["item_type","item","quantity","price","total","bought_from","remarks","bought_date","created"],
+    headers: ["Item","Price","Created"],
+    keys: ["name","price", "created"],
     limit: 10,
     page: 1,
     pages: 0,
@@ -175,8 +175,8 @@ export default function MenuItem({ params }){
   }, []);
 
   useEffect(()=>{
-    if(itemDetails?.item){
-      getSimilarMenuItems(itemDetails.item);
+    if(itemDetails?.name){
+      getSimilarMenuItems(itemDetails.name);
     }
   }, [page, itemDetails]);
 
@@ -211,7 +211,7 @@ export default function MenuItem({ params }){
               <Breadcrumb>
                 <Breadcrumb.Item className={styles.c_link} href="/admin">Home</Breadcrumb.Item>
                 <Breadcrumb.Item className={styles.c_link} href="/admin/menu">Menu</Breadcrumb.Item>
-                <Breadcrumb.Item className={styles.c_link} active>Item - {itemDetails?.item || params.id}</Breadcrumb.Item>
+                <Breadcrumb.Item className={styles.c_link} active>Item - {itemDetails?.name || params.id}</Breadcrumb.Item>
               </Breadcrumb>
             </Col>
           </Row>
@@ -225,19 +225,6 @@ export default function MenuItem({ params }){
         <div className={styles.c_div__color}>
           {isLoading ? (<Loading variant="info" />): (
             <Row className="mb-3">
-              {/* Select Type */}
-              <Form.Group
-                as={Col}
-                xs={6}
-                className="mb-3"
-              >
-                <Form.Label column="sm">Type</Form.Label>
-                <Form.Control
-                  disabled
-                  type="text"
-                  value={itemDetails?.item_type || ""}
-                />
-              </Form.Group>
               {/* Item */}
               <Form.Group 
                 as={Col} 
@@ -248,26 +235,13 @@ export default function MenuItem({ params }){
                 <Form.Control
                   disabled
                   type="text"
-                  value={itemDetails?.item || ""}
-                />
-              </Form.Group>
-              {/* Quantity */}
-              <Form.Group 
-                as={Col}
-                xs={4}
-                className="mb-3"
-              >
-                <Form.Label column="sm">Quantity</Form.Label>
-                <Form.Control
-                  disabled
-                  type="text"
-                  value={itemDetails?.quantity || ""}
+                  value={itemDetails?.name || ""}
                 />
               </Form.Group>
               {/* Price */}
               <Form.Group 
                 as={Col}
-                xs={4}
+                xs={6}
                 className="mb-3"
                 >
                 <Form.Label column="sm">Price</Form.Label>
@@ -277,61 +251,7 @@ export default function MenuItem({ params }){
                   value={itemDetails?.price || ""}
                 />
               </Form.Group>
-              {/* Total */}
-              <Form.Group 
-                as={Col}
-                xs={4}
-                className="mb-3"
-                >
-                <Form.Label column="sm">Total</Form.Label>
-                <Form.Control
-                  disabled
-                  type="text"
-                  value={itemDetails?.total || ""}
-                />
-              </Form.Group>
-              {/* Date Bought */}
-              <Form.Group 
-                as={Col} 
-                xs={6}
-                className="mb-3"
-              >
-                <Form.Label column="sm">Bought Date</Form.Label>
-                <Form.Control
-                  disabled
-                  type="text"
-                  value={itemDetails?.bought_date ? convertDateToString(itemDetails?.bought_date): ""}
-                />
-              </Form.Group>
-              {/* Bought From */}
-              <Form.Group 
-                as={Col} 
-                xs={6}
-                className="mb-3"
-              >
-                <Form.Label column="sm">Bought From</Form.Label>
-                <Form.Control
-                  disabled
-                  type="text"
-                  value={itemDetails?.bought_from || ""}
-                />
-              </Form.Group>
-              {/* Remarks */}
-              <Form.Group 
-                as={Col} 
-                xs={12}
-                className="mb-3"
-              >
-                <Form.Label column="sm">Remarks</Form.Label>
-                <Form.Control 
-                  as="textarea" 
-                  rows={2} 
-                  id="remarks" 
-                  placeholder="remarks" 
-                  disabled 
-                  defaultValue={itemDetails?.remarks || ""}
-                />
-              </Form.Group>
+              
               {/* CREATED BY */}
               <Form.Group 
                 as={Col} 
@@ -362,8 +282,8 @@ export default function MenuItem({ params }){
         </div>
         <div className={styles.c_div__color}>
           <Row className="mb-3">
-            <h5 className="text-secondary">Similar Data to <span className="fw-bold">{itemDetails?.item || params.id}</span></h5>
-            {isLoading ? (<Loading variant="info" />) : (
+            <h5 className="text-secondary">Similar Data to <span className="fw-bold">{itemDetails?.name || params.id}</span></h5>
+            {dtIsLoading ? (<Loading variant="info" />) : (
               similarData?.list && similarData.list.length>0 ? 
               (<Datatable 
                 dataList={similarData} 

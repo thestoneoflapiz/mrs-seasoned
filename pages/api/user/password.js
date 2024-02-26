@@ -48,8 +48,7 @@ async function handler(req, res){
         password: hashed,
         updated_at: moment().format(),
         updated_by: user.username
-      },
-      $currentDate: { lastUpdated: true }
+      }
     });
 
     client.close();

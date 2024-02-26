@@ -2,7 +2,7 @@
 
 import { ItemTypes, ConstCurrentDateTimeString } from "@/helpers/constants";
 import { useRef, useState } from "react";
-import { Modal, Button, Form, Row, Col, Toast } from "react-bootstrap";
+import { Modal, Button, Form, Row, Col, Toast, FormGroup } from "react-bootstrap";
 
 export default function AddMenuModal({ show, onModalClose }){
 
@@ -13,15 +13,8 @@ export default function AddMenuModal({ show, onModalClose }){
     message: ""
   });
 
-  const item_types = ItemTypes();
-
-  const itemTypeRef = useRef();
   const itemRef = useRef();
-  const quantityRef = useRef();
   const priceRef = useRef();
-  const boughtDateRef = useRef();
-  const boughtFromRef = useRef();
-  const remarksRef = useRef();
 
   function handleModalClose(data){
     setValidated(false);
@@ -42,24 +35,14 @@ export default function AddMenuModal({ show, onModalClose }){
 
   async function createItem(){
 
-    const enteredType = itemTypeRef.current.value;
     const enteredItem = itemRef.current.value;
-    const enteredQT = quantityRef.current.value;
     const enteredPrice = priceRef.current.value;
-    const enteredAt = boughtDateRef.current.value;
-    const enteredFrom = boughtFromRef.current.value;
-    const enteredRemarks = remarksRef.current.value;
 
     const response = await fetch("/api/menu/add", {
       method: "POST",
       body: JSON.stringify({
-        item_type: enteredType,
-        item: enteredItem,
-        quantity: enteredQT,
+        name: enteredItem,
         price: enteredPrice,
-        bought_date: enteredAt,
-        bought_from: enteredFrom,
-        remarks: enteredRemarks,
       },{
         headers:{
           "Content-Type": "application/json"
@@ -98,7 +81,7 @@ export default function AddMenuModal({ show, onModalClose }){
         keyboard={false}
       >
           <Modal.Header closeButton>
-            <Modal.Title>Add Menu</Modal.Title>
+            <Modal.Title>Add Item</Modal.Title>
           </Modal.Header>
           <Modal.Body>
             <Toast 
@@ -114,23 +97,6 @@ export default function AddMenuModal({ show, onModalClose }){
             </Toast>
             <Form noValidate validated={validated} onSubmit={handleSubmit}>
               <Row className="mb-3">
-                {/* Select Type */}
-                <Form.Group
-                  as={Col}
-                  xs={12}
-                  className="mb-3"
-                >
-                  <Form.Select 
-                    aria-label="Select Type" 
-                    required
-                    ref={itemTypeRef}
-                  >
-                    <option disabled selected value="">Select Type</option>
-                    {item_types.map((type, i)=>{
-                      return (<option value={type} key={i}>{type}</option>)
-                    })}
-                  </Form.Select>
-                </Form.Group>
                 {/* Item */}
                 <Form.Group 
                   as={Col} 
@@ -144,28 +110,13 @@ export default function AddMenuModal({ show, onModalClose }){
                     type="text"
                     placeholder="item"
                     ref={itemRef}
-                  />
-                </Form.Group>
-                {/* Quantity */}
-                <Form.Group 
-                  as={Col}
-                  xs={6}
-                  className="mb-3"
-                >
-                  <Form.Control
-                    required
-                    min={1.00}
-                    step={0.01}
-                    id="quantity"
-                    type="number"
-                    placeholder="quantity"
-                    ref={quantityRef}
+                    name="menu_item"
                   />
                 </Form.Group>
                 {/* Price */}
                 <Form.Group 
                   as={Col}
-                  xs={6}
+                  xs={12}
                   className="mb-3"
                 >
                   <Form.Control
@@ -175,48 +126,8 @@ export default function AddMenuModal({ show, onModalClose }){
                     id="price"
                     type="number"
                     placeholder="price"
+                    name="menu_price"
                     ref={priceRef}
-                  />
-                </Form.Group>
-                {/* Date Bought */}
-                <Form.Group 
-                  as={Col} 
-                  xs={12}
-                  className="mb-3"
-                >
-                  <Form.Control
-                    required
-                    id="bought_date"
-                    type="text"
-                    placeholder="date bought"
-                    defaultValue={ConstCurrentDateTimeString()}
-                    ref={boughtDateRef}
-                  />
-                </Form.Group>
-                {/* Bought From */}
-                <Form.Group 
-                  as={Col} 
-                  xs={12}
-                  className="mb-3"
-                >
-                  <Form.Control
-                    id="bought_from"
-                    type="text"
-                    placeholder="bought from"
-                    ref={boughtFromRef}
-                  />
-                </Form.Group>
-                {/* Remarks */}
-                <Form.Group 
-                  as={Col} 
-                  xs={12}
-                >
-                  <Form.Control 
-                    as="textarea" 
-                    rows={2} 
-                    id="remarks" 
-                    placeholder="remarks"
-                    ref={remarksRef}
                   />
                 </Form.Group>
               </Row>

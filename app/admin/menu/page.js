@@ -14,7 +14,6 @@ import {
   ToastContainer,
   Toast
 } from "react-bootstrap";
-import { ConstMonths, ConstYears } from "@/helpers/constants";
 import { useCallback, useEffect, useState } from "react";
 import { debounce } from "lodash";
 import Loading from "@/components/loading";
@@ -31,43 +30,23 @@ export default function MenuPage(){
   const [showImportModal, setShowImportModal] = useState(false);
   const [page, setPage] = useState(1);
 
-  const months = ConstMonths().months;
-  const years = ConstYears("1975-01-01");
 
-  const [fMonth, setFMonth] = useState(parseInt(moment().format("MM")));
-  const [fYear, setFYear] = useState(parseInt(moment().format("YYYY")));
   const [fSearch, setFSearch] = useState("");
   const [fSort, setFSort] = useState({
-    field: "bought_date",
+    field: "name",
     sort: "desc"
   });
   
   const [data, setData] = useState({
     list: [],
-    headers: ["Type","Item","QT","Price","Total","From","Remarks","Date","Created"],
-    keys: ["item_type","item","quantity","price","total","bought_from","remarks","bought_date","created"],
-    sortable: ["item_type","item", "quantity", "price", "total", "bought_from","remarks","bought_date"],
+    headers: ["Item","Price","Created"],
+    keys: ["name","price", "created"],
+    sortable: ["name", "price"],
     limit: 10,
     page: 1,
     pages: 0,
     total: 0,
   });
-
-  function generateMonths(months){
-    const monthArr = months.map((mon, i)=>{
-      return (<option key={i} value={i+1}>{mon}</option>)
-    });
-
-    return monthArr;
-  }
-
-  function generateYears(years){
-    const yearArr = years.map((yr, i)=>{
-      return (<option key={i} value={yr}>{yr}</option>)
-    });
-
-    return yearArr;
-  }
 
   function generateSortableFields(){
     const sortable = data.sortable.map((sort, i)=>{
@@ -80,8 +59,6 @@ export default function MenuPage(){
   async function getMenu(){
     setIsLoading(true);
     const filters = new URLSearchParams({
-      month: fMonth,
-      year: fYear,
       search: fSearch,
       sort: fSort.sort,
       by: fSort.field,
@@ -160,21 +137,6 @@ export default function MenuPage(){
     }
   }
 
-  function handleDateChange(type, e){
-    const value = e.target.value;
-    switch (type) {
-      case "month":
-        setFMonth(value);
-        setPage(1);
-      break;
-    
-      default:
-        setFYear(value);
-        setPage(1);
-      break;
-    }
-  }
-
   const handleSearch = (e) => {
     debounceFn(e.target.value)
     setPage(1);
@@ -205,7 +167,7 @@ export default function MenuPage(){
 
   useEffect(()=>{
     getMenu();
-  }, [page, fMonth, fYear, fSearch, fSort]);
+  }, [page, fSearch, fSort]);
 
   return(
     <> 
@@ -249,26 +211,6 @@ export default function MenuPage(){
         </div>
         <div className={styles.c_div__color}>
           <Row>
-            <Col lg={2} md={3} sm={6} xs={6} className="py-2">
-              <Form.Select 
-                aria-label="Select Month" 
-                defaultValue={parseInt(moment().format("MM"))}
-                onChange={(e)=>handleDateChange("month", e)}
-              >
-                <option disabled>Select Month</option>
-                {generateMonths(months)}
-              </Form.Select>
-            </Col>
-            <Col lg={2} md={3} sm={6} xs={6} className="py-2">
-              <Form.Select 
-                aria-label="Select Year" 
-                defaultValue={parseInt(moment().format("YYYY"))}
-                onChange={(e)=>handleDateChange("year", e)}
-              >
-                <option disabled>Select Year</option>
-                {generateYears(years)}
-              </Form.Select>
-            </Col>
             <Col md={4} xs={12} className="py-2">
               <Form.Group className="mb-3" controlId="searchBy">
                 <Form.Control 
