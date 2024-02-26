@@ -23,6 +23,10 @@ export default function Header({ pageTitle, activePage="" }){
     {
       name: "Sales",
       link: "/admin/sales", 
+    },
+    {
+      name: "Menu",
+      link: "/admin/menu", 
     }
   ]
   
