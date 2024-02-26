@@ -1,5 +1,6 @@
 import { getAuthUser } from "@/helpers/auth";
 import { connectToDatabase } from "@/helpers/db";
+import moment from "moment";
 
 async function handler(req, res){
   if(req.method !== "POST"){
@@ -24,10 +25,10 @@ async function handler(req, res){
       quantity: parseFloat(d[2]),
       price: parseFloat(d[3]),
       total: parseFloat(d[2])*parseFloat(d[3]),
-      bought_date: new Date(d[4]),
+      bought_date: moment(d[4]).format(),
       bought_from: d[5],
       remarks: d[6],
-      created_at: new Date(),
+      created_at: moment().format(),
       created_by: authUser?.name || (authUser?.username || "!!ERR")
     }
   });

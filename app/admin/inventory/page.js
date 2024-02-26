@@ -13,16 +13,16 @@ import {
   Button, 
   Form 
 } from "react-bootstrap";
-import { ConstMonths, ConstYears, ConstCurrentDate } from "@/helpers/constants";
+import { ConstMonths, ConstYears } from "@/helpers/constants";
 import { useEffect, useState } from "react";
+import moment from "moment";
 
 export default function InventoryPage(){
   const months = ConstMonths().months;
   const years = ConstYears("1975-01-01");
-  const dateNow = ConstCurrentDate();
 
-  const [fMonth, setFMonth] = useState(months[dateNow.getMonth()]);
-  const [fYear, setFYear] = useState(dateNow.getFullYear());
+  const [fMonth, setFMonth] = useState(parseInt(moment().format("MM")));
+  const [fYear, setFYear] = useState(parseInt(moment().format("YYYY")));
   const [fSearch, setFSearch] = useState("");
   const [fSort, setFSort] = useState({
     field: "",
@@ -124,13 +124,13 @@ export default function InventoryPage(){
         <div className={styles.c_div__color}>
           <Row>
             <Col lg={2} md={3} sm={6} xs={6} className="py-2">
-              <Form.Select aria-label="Select Month" defaultValue={months[dateNow.getMonth()]}>
+              <Form.Select aria-label="Select Month" defaultValue={parseInt(moment().format("MM"))}>
                 <option disabled>Select Month</option>
                 {generateMonths(months)}
               </Form.Select>
             </Col>
             <Col lg={2} md={3} sm={6} xs={6} className="py-2">
-              <Form.Select aria-label="Select Year" defaultValue={dateNow.getFullYear()}>
+              <Form.Select aria-label="Select Year" defaultValue={parseInt(moment().format("YYYY"))}>
                 <option disabled>Select Year</option>
                 {generateYears(years)}
               </Form.Select>

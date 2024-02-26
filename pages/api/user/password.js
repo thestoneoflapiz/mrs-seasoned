@@ -1,6 +1,7 @@
 import { hashPassword, verifyPassword } from "@/helpers/auth";
 import { getToken } from "next-auth/jwt";
 import { connectToDatabase } from "@/helpers/db";
+import moment from "moment";
 
 async function handler(req, res){
   const data = JSON.parse(req.body);
@@ -45,7 +46,7 @@ async function handler(req, res){
     const updated = await users.updateOne({ username: user.username }, {
       $set: {
         password: hashed,
-        updated_at: new Date(),
+        updated_at: moment().format(),
         updated_by: user.username
       },
       $currentDate: { lastUpdated: true }

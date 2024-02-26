@@ -1,4 +1,5 @@
 import { connectToDatabase } from "@/helpers/db";
+import moment from "moment";
 import { BSON } from "mongodb";
 
 async function handler(req, res){
@@ -62,12 +63,12 @@ async function handler(req, res){
     client.close();
     res.status(201).json({
       list: expenses.map((item)=>{
-        const dateFormatC = new Date(item.created_at);
-        const dateFormatD = new Date(item.bought_date);
-        item.bought_date = `${dateFormatD.getFullYear()}-${dateFormatD.getMonth()+1}-${dateFormatD.getDate()}`
+        const dateFormatC = moment(item.created_at).format("YYYY-MM-DD");
+        const dateFormatD = moment(item.bought_date).format("YYYY-MM-DD");
+        item.bought_date = dateFormatD;
         item.created = {
           by: item.created_by,
-          date: `${dateFormatC.getFullYear()}-${dateFormatC.getMonth()+1}-${dateFormatC.getDate()}`
+          date: dateFormatC
         }
         return item;
       }),

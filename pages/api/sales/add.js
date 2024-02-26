@@ -1,5 +1,6 @@
 import { getAuthUser } from "@/helpers/auth";
 import { connectToDatabase } from "@/helpers/db";
+import moment from "moment";
 
 async function handler(req, res){
   if(req.method !== "POST"){
@@ -31,9 +32,9 @@ async function handler(req, res){
     const cCustomer = await getOrCreateCustomer(customer, db, authUser);
     const cOrders = createOrders(orders);
     const sales = await db.collection("orders").insertOne({
-      order_date: new Date(order_date),
+      order_date: moment(order_date).format(),
       order_id,
-      customer_id: cCustomer._id,
+      customer_id: cCustomer._id ?? cCustomer.insertedId,
       "orders": cOrders,
       discount,
       mop,
@@ -41,7 +42,7 @@ async function handler(req, res){
       delivery_fee,
       total,
       remarks,
-      created_at: new Date(),
+      created_at: moment().format(),
       created_by: authUser?.name || (authUser?.name || "!!ERR")
     })
 
@@ -72,10 +73,11 @@ async function getOrCreateCustomer(name,db,authUser){
     const customer = await db.collection("customers")
       .insertOne({
         name,
-        created_at: new Date(),
+        created_at: moment().format(),
         created_by: authUser?.name || (authUser?.name || "!!ERR")
       })
 
+      console.log(customer);
     return customer;
   }
 

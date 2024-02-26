@@ -14,10 +14,11 @@ import {
   ToastContainer,
   Toast
 } from "react-bootstrap";
-import { ConstMonths, ConstYears, ConstCurrentDate } from "@/helpers/constants";
+import { ConstMonths, ConstYears } from "@/helpers/constants";
 import { useCallback, useEffect, useState } from "react";
 import { debounce } from "lodash";
 import Loading from "@/components/loading";
+import moment from "moment";
 
 export default function ExpensesPage(){
   const [isLoading, setIsLoading] = useState(true);
@@ -32,10 +33,9 @@ export default function ExpensesPage(){
 
   const months = ConstMonths().months;
   const years = ConstYears("1975-01-01");
-  const dateNow = ConstCurrentDate();
 
-  const [fMonth, setFMonth] = useState(dateNow.getMonth()+1);
-  const [fYear, setFYear] = useState(dateNow.getFullYear());
+  const [fMonth, setFMonth] = useState(parseInt(moment().format("MM")));
+  const [fYear, setFYear] = useState(parseInt(moment().format("YYYY")));
   const [fSearch, setFSearch] = useState("");
   const [fSort, setFSort] = useState({
     field: "created_at",
@@ -247,7 +247,7 @@ export default function ExpensesPage(){
             <Col lg={2} md={3} sm={6} xs={6} className="py-2">
               <Form.Select 
                 aria-label="Select Month" 
-                defaultValue={dateNow.getMonth()+1}
+                defaultValue={parseInt(moment().format("MM"))}
                 onChange={(e)=>handleDateChange("month", e)}
               >
                 <option disabled>Select Month</option>
@@ -257,7 +257,7 @@ export default function ExpensesPage(){
             <Col lg={2} md={3} sm={6} xs={6} className="py-2">
               <Form.Select 
                 aria-label="Select Year" 
-                defaultValue={dateNow.getFullYear()}
+                defaultValue={parseInt(moment().format("YYYY"))}
                 onChange={(e)=>handleDateChange("year", e)}
               >
                 <option disabled>Select Year</option>

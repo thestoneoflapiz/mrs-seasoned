@@ -55,10 +55,10 @@ async function paginatedList(req, res){
     client.close();
     res.status(201).json({
       list: menu.map((item)=>{
-        const dateFormatC = new Date(item.created_at);
+        const dateFormatC = moment(item.created_at).format("YYYY-MM-DD");
         item.created = {
           by: item.created_by,
-          date: `${dateFormatC.getFullYear()}-${dateFormatC.getMonth()+1}-${dateFormatC.getDate()}`
+          date: dateFormatC
         }
         return item;
       }),

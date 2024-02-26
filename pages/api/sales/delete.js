@@ -1,6 +1,7 @@
 import { getAuthUser } from "@/helpers/auth";
 import { connectToDatabase } from "@/helpers/db";
 import { BSON } from "mongodb";
+import moment from "moment";
 
 async function handler(req, res){
   if(req.method !== "POST"){
@@ -25,7 +26,7 @@ async function handler(req, res){
   try {
     const sales = await db.collection("sales").updateOne({ _id: nid}, {
       $set: {
-        deleted_at: new Date(),
+        deleted_at: moment().format(),
         deleted_by: authUser.username || "!!ERR"
       },
       $currentDate: { lastUpdated: true }

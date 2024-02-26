@@ -1,6 +1,6 @@
 "use client"
 
-import { MOPs, ConstCurrentDateString } from "@/helpers/constants";
+import { MOPs, ConstCurrentDateTimeString } from "@/helpers/constants";
 import { useEffect, useRef, useState } from "react";
 import { Modal, Button, Form, Row, Col, Toast } from "react-bootstrap";
 import styles from "@/app/page.module.css";
@@ -325,7 +325,7 @@ export default function AddSalesModal({ show, onModalClose }){
                     id="order_date"
                     type="text"
                     placeholder="order date"
-                    defaultValue={ConstCurrentDateString()}
+                    defaultValue={ConstCurrentDateTimeString()}
                     ref={orderDateRef}
                   />
                 </Form.Group>

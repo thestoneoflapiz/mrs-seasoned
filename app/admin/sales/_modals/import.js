@@ -4,7 +4,7 @@ import { useState, useRef } from "react";
 import { Modal, Button, Form, Row, Col, Toast } from "react-bootstrap";
 import Papa from "papaparse";
 
-export default function ImportExpensesCSVModal({ show, onModalClose }){
+export default function ImportSalesCSVModal({ show, onModalClose }){
 
   const [validated, setValidated] = useState(false);
   const [showToast, setShowToast] = useState(false);
@@ -27,6 +27,16 @@ export default function ImportExpensesCSVModal({ show, onModalClose }){
     if (form.checkValidity() === false) {
       event.stopPropagation();
     }
+    
+    if(fileRef.current.files.length==0){
+      setToastMsg((prev)=>{
+        const newState = prev;
+        newState.variant = "danger";
+        newState.message = "Please select a CSV file...";
+        return newState;
+      });
+      setShowToast(true);
+    }
 
     parseCSVFile();
     setValidated(true);
@@ -42,7 +52,7 @@ export default function ImportExpensesCSVModal({ show, onModalClose }){
   }
 
   async function importCSVFile(csv){
-    const response = await fetch("/api/expenses/import", {
+    const response = await fetch("/api/sales/import", {
       method: "POST",
       body: JSON.stringify({
         data: csv
@@ -84,7 +94,7 @@ export default function ImportExpensesCSVModal({ show, onModalClose }){
         keyboard={false}
       >
           <Modal.Header closeButton>
-            <Modal.Title>Import Expenses CSV</Modal.Title>
+            <Modal.Title>Import Sales CSV</Modal.Title>
           </Modal.Header>
           <Modal.Body>
             <Toast 

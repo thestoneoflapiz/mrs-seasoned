@@ -1,4 +1,5 @@
 import { connectToDatabase } from "@/helpers/db";
+import moment from "moment";
 import { BSON } from "mongodb";
 
 async function handler(req, res){
@@ -20,7 +21,6 @@ async function handler(req, res){
     },
   };
 
-  const mongoSearch = {$text: {$search: query.search}};
 
   let completeQuery = {};
 
@@ -29,7 +29,8 @@ async function handler(req, res){
   }
   
   if(query.search){
-    completeQuery = {...completeQuery, ...mongoSearch}
+    // const mongoSearch = {$text: {$search: query.search}};
+    // completeQuery = {...completeQuery, ...mongoSearch}
   }
 
   if(query?.ne_id){
@@ -48,25 +49,43 @@ async function handler(req, res){
   const db = client.db();
   
   try {
-    const totalExpenses = await db.collection("orders").countDocuments(completeQuery);
+    const totalSales = await db.collection("orders").countDocuments(completeQuery);
     
-    let pages = totalExpenses <= 10 ? 1 : totalExpenses / query.limit;
-    pages = Math.ceil(pages);
+    // let pages = totalSales <= 10 ? 1 : totalSales / query.limit;
+    // pages = Math.ceil(pages);
+
+    
+    client.close();
+    res.status(422).json({
+      message: "Something went wrong...",
+      totalSales
+    });
+
+    return;
+
     const sales = await db.collection("orders")
       .find(completeQuery)
-      .skip(parseInt(query.page)-1)
+      .skip((parseInt(query.page)-1)*parseInt(query.limit))
       .limit(parseInt(query.limit))
       .sort(sortObj)
       .toArray();
 
     client.close();
 
-    const list = await remapList(sales, db);
+    const customers = await db.collection("customers")
+      .find({"_id": { "$in": sales.map((s)=>s.customer_id)}})
+      .project({
+        id: 1,
+        name: 1,
+      })
+      .toArray();
+
+    const list = await remapList(sales, customers);
 
     res.status(201).json({
       list,
       pagination: {
-        total: totalExpenses,
+        total: totalSales,
         pages,
         page: parseInt(query.page),
         limit: parseInt(query.limit),
@@ -83,25 +102,25 @@ async function handler(req, res){
   return;
 }
 
-async function getCustomer(db, _id){
+async function getCustomers(db, _id){
   const customer = await db.collection("customers")
     .findOne({_id})
   return customer;
 }
 
-async function remapList(sales, db){
+async function remapList(sales, customers){
   let list = [];
-
   for (let i = 0; i < sales.length; i++) {
     const item = sales[i];
-    const dateFormatC = new Date(item.created_at);
-    const dateFormatD = new Date(item.order_date);
-    item.order_date = `${dateFormatD.getFullYear()}-${dateFormatD.getMonth()+1}-${dateFormatD.getDate()}`
+    const customer = customers.find((c)=>c._id.equals(item.customer_id));
+    const dateFormatC = moment(item.created_at).format("YYYY-MM-DD hh:mm A");
+    const dateFormatD = moment(item.order_date).format("YYYY-MM-DD hh:mm A");
+
+    item.order_date = dateFormatD
     item.created = {
       by: item.created_by,
-      date: `${dateFormatC.getFullYear()}-${dateFormatC.getMonth()+1}-${dateFormatC.getDate()}`
+      date: dateFormatC
     }
-    const customer = await getCustomer(db, item.customer_id);
     item.customer = customer?.name ?? "!!ERR";
     list.push(item);
   }

@@ -1,4 +1,6 @@
+import moment from "moment";
+
 export function convertDateToString(dateString){
-  const newDate = new Date(dateString);
-  return `${newDate.getFullYear()}-${newDate.getMonth()+1}-${newDate.getDate()}`;
+  const newDate = moment(dateString).format("YYYY-MM-DD");
+  return newDate;
 }

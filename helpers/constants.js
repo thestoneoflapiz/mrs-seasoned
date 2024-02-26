@@ -1,4 +1,4 @@
-const now = new Date();
+import moment from "moment";
 
 export function ConstMonths(){
   var monthsFull = ["January","February","March","April","May","June","July",
@@ -11,23 +11,23 @@ export function ConstMonths(){
 }
 
 export function ConstYears(fromYear){
-  const dateFrom = new Date(fromYear);
-  const dateTo = now;
+  const dateFrom = parseInt(moment(fromYear).format("YYYY"));
+  const dateTo = parseInt(moment().format("YYYY"));
 
   const years = [];
-  for (let i = dateFrom.getFullYear(); i <= dateTo.getFullYear(); i++) {
+  for (let i = dateFrom; i <= dateTo; i++) {
     years.push(i);
   }
 
   return years.reverse();
 }
 
-export function ConstCurrentDate(){
-  return now;
+export function ConstCurrentDateString(divisor="-"){
+  return moment().format(`YYYY${divisor}MM${divisor}DD`);
 }
 
-export function ConstCurrentDateString(divisor="-"){
-  return `${now.getFullYear()}${divisor}${now.getMonth()+1}${divisor}${now.getDate()}`;
+export function ConstCurrentDateTimeString(divisor="-"){
+  return moment().format(`YYYY${divisor}MM${divisor}DD hh:mm A`);
 }
 
 export function ItemTypes(){

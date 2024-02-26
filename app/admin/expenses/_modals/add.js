@@ -1,6 +1,6 @@
 "use client"
 
-import { ItemTypes, ConstCurrentDateString } from "@/helpers/constants";
+import { ItemTypes, ConstCurrentDateTimeString } from "@/helpers/constants";
 import { useRef, useState } from "react";
 import { Modal, Button, Form, Row, Col, Toast } from "react-bootstrap";
 
@@ -189,7 +189,7 @@ export default function AddExpenseModal({ show, onModalClose }){
                     id="bought_date"
                     type="text"
                     placeholder="date bought"
-                    defaultValue={ConstCurrentDateString()}
+                    defaultValue={ConstCurrentDateTimeString()}
                     ref={boughtDateRef}
                   />
                 </Form.Group>

@@ -1,5 +1,6 @@
 import { hashPassword } from "@/helpers/auth";
 import { connectToDatabase } from "@/helpers/db";
+import moment from "moment";
 
 async function handler(req, res){
   if(req.method !== "POST"){
@@ -28,7 +29,7 @@ async function handler(req, res){
         username: username,
         name: username,
         password: hashed,
-        created_at: new Date(),
+        created_at: moment().format(),
         created_by: "system",
       });
   
