@@ -24,7 +24,7 @@ async function handler(req, res){
 
   const nid = new BSON.ObjectId(_id);
   try {
-    const expenses = await db.collection("expenses").updateOne({ _id: nid}, {
+    const menu = await db.collection("menu").updateOne({ _id: nid}, {
       $set: {
         deleted_at: moment().format(),
         deleted_by: authUser.username || "!!ERR"

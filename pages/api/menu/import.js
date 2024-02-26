@@ -18,7 +18,7 @@ async function handler(req, res){
 
   const authUser = await getAuthUser(req);
   
-  let expenses = data.map((d)=>{
+  let menu = data.map((d)=>{
     return{
       item_type: d[0],
       item: d[1],
@@ -33,14 +33,14 @@ async function handler(req, res){
     }
   });
 
-  expenses = expenses.filter((d)=>d.item_type!="");
+  menu = menu.filter((d)=>d.item_type!="");
 
   const client = await connectToDatabase();
   const db = client.db();
 
   try {
-    const expenseItems = await db.collection("expenses").insertMany([
-      ...expenses
+    const expenseItems = await db.collection("menu").insertMany([
+      ...menu
     ]);
 
     client.close();

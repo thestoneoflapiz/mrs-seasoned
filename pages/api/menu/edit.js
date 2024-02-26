@@ -24,7 +24,7 @@ async function handler(req, res){
 
   const nid = new BSON.ObjectId(_id);
   try {
-    const expenses = await db.collection("expenses").updateOne({ _id: nid}, {
+    const menu = await db.collection("menu").updateOne({ _id: nid}, {
       $set: {
         item_type,
         item,
