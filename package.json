@@ -5,8 +5,9 @@
   "scripts": {
     "dev": "next dev",
     "build": "next build",
-    "start": "next start",
-    "lint": "next lint"
+    "start": "npm run open-browser && next start",
+    "lint": "next lint",
+    "open-browser": "start http://localhost:3000"
   },
   "dependencies": {
     "bcryptjs": "^2.4.3",
