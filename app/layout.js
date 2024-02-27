@@ -5,6 +5,7 @@ import 'bootstrap/dist/css/bootstrap.min.css';
 import "bootstrap-icons/font/bootstrap-icons.css";
 import { getServerSession } from "next-auth";
 import SessionProvider from "@/components/SessionProvider"
+import styles from "@/app/page.module.css"
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -18,7 +19,7 @@ export default async function RootLayout({ children }) {
 
   return (
     <html lang="en">
-      <body className={inter.className}>
+      <body className={inter.className+" "+styles.c_background}>
         <SessionProvider session={session}>
           {children}
         </SessionProvider>
