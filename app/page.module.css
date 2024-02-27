@@ -66,7 +66,7 @@
   padding: 3%;
 }
 
-.c_div, .c_div__color{
+.c_div, .c_div__color, .c_report_wrapper{
   border-radius: 10px;
   width: 90%;
   height: max-content;
@@ -75,7 +75,7 @@
   padding: 10px;
 }
 
-.c_div__color{
+.c_div__color, .c_report_wrapper{
   background-color: #fff;
 }
 
@@ -92,4 +92,12 @@
   border-top: 3px #56B4D3 dotted;
   border-bottom: 3px #56B4D3 dotted;
   margin: 8px auto;
+}
+
+.c_report_wrapper{
+  height: 300px;
+}
+
+.c_report_container{
+  margin: 5% auto;
 }

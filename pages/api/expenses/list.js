@@ -44,7 +44,7 @@ async function handler(req, res){
   const client = await connectToDatabase();
   const db = client.db();
   
-  // try {
+  try {
     const totalExpenses = await db.collection("expenses").countDocuments(completeQuery);
     
     let pages = totalExpenses <= 10 ? 1 : totalExpenses / query.limit;
@@ -75,13 +75,13 @@ async function handler(req, res){
         limit: parseInt(query.limit),
       }
     });
-  // } catch (error) {
-  //   client.close();
-  //   res.status(422).json({
-  //     message: "Something went wrong...",
-  //     error
-  //   });
-  // }
+  } catch (error) {
+    client.close();
+    res.status(422).json({
+      message: "Something went wrong...",
+      error
+    });
+  }
 
   return;
 }
