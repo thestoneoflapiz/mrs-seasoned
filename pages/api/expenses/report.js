@@ -56,6 +56,10 @@ async function handler(req, res){
       case "total":
         data = await queryTotal(completeQuery, db, query.filter);
       break;
+
+      case "totality":
+        data = await queryTotality(completeQuery, db, query.filter);
+      break;
     
       default:
         data = await queryDefault(completeQuery, db, query.filter);
@@ -122,6 +126,30 @@ async function queryTotal(query, db, filter){
     
     return sortBy(sorted, ["name"]);
   }
+  return [];
+}
+
+async function queryTotality(query, db, filter){
+  const remapped = [];
+  const data = await db.collection("expenses")
+    .find(query)
+    .project({
+      total: 1,
+    })
+    .toArray();
+
+  if(data && data.length > 0){
+    const totalExpenses = data.map((e)=>{ return e.total });
+    const sumExpenses = sum(totalExpenses);
+    remapped.push({
+      name: "Expenses",
+      desc: `total of ${totalExpenses.length} items`,
+      amount: sumExpenses,
+    });
+
+    return remapped;
+  }
+
   return [];
 }
 

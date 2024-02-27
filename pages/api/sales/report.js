@@ -1,6 +1,6 @@
 import { connectToDatabase } from "@/helpers/db";
 import { ledMonthNum } from "@/helpers/strings";
-import { forEach, groupBy, sortBy, sum } from "lodash";
+import { forEach, groupBy, sortBy, sum, values } from "lodash";
 import moment from "moment";
 
 async function handler(req, res){
@@ -55,6 +55,10 @@ async function handler(req, res){
     switch (query.report) {
       case "total":
         data = await queryTotal(completeQuery, db, query.filter);
+      break;
+
+      case "totality":
+        data = await queryTotality(completeQuery, db, query.filter);
       break;
     
       default:
@@ -123,6 +127,81 @@ async function queryTotal(query, db, filter){
     
     return sortBy(sorted, ["name"]);
   }
+  return [];
+}
+
+async function queryTotality(query, db, filter){
+  const remapped = [];
+  const data = await db.collection("orders")
+    .find(query)
+    .project({
+      order_id:1,
+      total: 1,
+      orders: 1,
+      discount: 1,
+      delivery_fee: 1,
+      delivery_address: 1,
+      customer_id: 1,
+    })
+    .toArray();
+
+  // sales, tubo, dfee, discounts, customers, places
+  
+  if(data && data.length > 0){
+    const totalSales = data.map((s)=>{ return s.total-s.delivery_fee });
+    const sumSales = sum(totalSales);
+    remapped.push({
+      name: "Sales",
+      desc: `total of ${totalSales.length} orders`,
+      amount: sumSales,
+    });
+
+    const totalDiscounts = data.filter((s)=>s.discount>0);
+    const totalNoDiscounts = data.filter((s)=>s.discount==0);
+    const sumNoDiscounts = sum(totalNoDiscounts.map((d)=>{ return d.total-d.delivery_fee }));  
+    const sumDiscountsReverted = sum(totalDiscounts.map((d)=>{
+      const discount = (100-d.discount)/100;
+      const totalMinusFee = d.total-d.delivery_fee;
+      const unDiscount = totalMinusFee / discount;
+      return unDiscount;
+    }));
+
+    const totalExpectedSales = sumNoDiscounts+sumDiscountsReverted;
+    const totalAmountOfDiscounted = totalExpectedSales-sumSales;
+
+    remapped.push({
+      name: "Tubo",
+      desc: `30% off sales`,
+      amount: (totalExpectedSales*0.3)-totalAmountOfDiscounted,
+    });
+
+    remapped.push({
+      name: "Discount",
+      desc: `total of ${totalDiscounts.length} discounted`,
+      amount: totalAmountOfDiscounted,
+    });
+
+    const groupedByCustomers = groupBy(data, "customer_id")
+    const totalCustomers = values(groupedByCustomers);
+    
+    remapped.push({
+      name: "Customers",
+      desc: `total of`,
+      amount: totalCustomers.length || 0,
+    });
+
+    const groupedByPlaces = groupBy(data, "delivery_address")
+    const totalPlaces = values(groupedByPlaces);
+    
+    remapped.push({
+      name: "Places",
+      desc: `total of`,
+      amount: totalPlaces.length || 0,
+    });
+
+    return remapped;
+  }
+
   return [];
 }
 
