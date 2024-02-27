@@ -135,41 +135,44 @@ export default function ReportingCardPage({ filterBy, fMonth, fYear }){
   }
 
   useEffect(()=>{
-
-    
     getTotalityReportSales();
     getTotalityReportExpenses();
-
   },[filterBy, fMonth, fYear])
 
   return(
     <>
       <Container>
         <Row>
-          {totalExpenses.map((s)=>{
+          {totalExpenses.map((s,i)=>{
             return(
-              <Col xl={2} lg={3} md={4} sm={4} xs={6} className="mb-3">
+              <Col xl={2} lg={3} md={4} sm={4} xs={6} className="mb-3" key={i+"expensesdiv"}>
                 <Card className={styles.c_card}>
                   <Card.Body>
                     <Card.Title>{s.name || "!ERR"}</Card.Title>
                     <Card.Subtitle>{s.desc || ""}</Card.Subtitle>
-                    <Card.Text className="fs-1">
-                      {s.amount.toLocaleString() || 0}
+                    <Card.Text className="fs-3">
+                      {s.amount.toLocaleString('en-US', {
+                        minimumFractionDigits: 0,
+                        maximumFractionDigits: 2,
+                      }) || 0}
                     </Card.Text>
                   </Card.Body>
                 </Card>
               </Col>
               )
           })}
-          {totalSales.map((s)=>{
+          {totalSales.map((s,i)=>{
             return(
-              <Col xl={2} lg={3} md={4} sm={4} xs={6} className="mb-3">
+              <Col xl={2} lg={3} md={4} sm={4} xs={6} className="mb-3" key={i+"salesdiv"}>
                 <Card className={styles.c_card}>
                   <Card.Body>
                     <Card.Title>{s.name || "!ERR"}</Card.Title>
                     <Card.Subtitle>{s.desc || ""}</Card.Subtitle>
-                    <Card.Text className="fs-1">
-                      {s.amount.toLocaleString() || 0}
+                    <Card.Text className="fs-3">
+                      {s.amount.toLocaleString('en-US', {
+                        minimumFractionDigits: 0,
+                        maximumFractionDigits: 2,
+                      }) || 0}
                     </Card.Text>
                   </Card.Body>
                 </Card>
