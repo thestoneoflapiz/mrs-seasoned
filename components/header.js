@@ -47,17 +47,15 @@ export default function Header({ pageTitle, activePage="" }){
         <Row className={`justify-content-start align-items-center ${styles.expand}`}>
           <Col xl={6} lg={6} md={12}>
             <Row className="justify-content-start align-items-center">
-              <Col xl={1} sm={1} xs={2}>
+              <Col md={6} sm={6} xs={9}>
                 <Image 
                   src="/img/logo.png" 
                   alt="Mrs.Seasoned Logo Original" 
-                  className={styles.logo}
+                  className={styles.logo+" me-2"}
                 />
-              </Col>
-              <Col>
                 <Navbar.Brand className="fw-bold text-secondary">{pageTitle}</Navbar.Brand>
               </Col>
-              <Col>
+              <Col md={6} sm={6} xs={3}>
                 <Navbar.Toggle aria-controls="basic-navbar-nav" className="float-end" />
               </Col>
             </Row>
