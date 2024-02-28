@@ -1,7 +1,7 @@
 import { getAuthUser } from "@/helpers/auth";
 import { connectToDatabase } from "@/helpers/db";
 import { ledMonthNum } from "@/helpers/strings";
-import { forEach, groupBy, sortBy, sum, values } from "lodash";
+import { forEach, groupBy, orderBy, sortBy, sum, values } from "lodash";
 import moment from "moment";
 
 async function handler(req, res){
@@ -52,7 +52,7 @@ async function handler(req, res){
   const authUser = await getAuthUser(req);
   
   let data = [];
-  try {
+  // try {
 
     switch (query.report) {
       case "total":
@@ -61,6 +61,14 @@ async function handler(req, res){
 
       case "totality":
         data = await queryTotality(completeQuery, db, query.filter, authUser);
+      break;
+
+      case "top_customers":
+        data = await queryTopCustomers(query, db);
+      break;
+
+      case "best_seller":
+        data = await queryBestSeller(query, db);
       break;
     
       default:
@@ -72,13 +80,13 @@ async function handler(req, res){
     res.status(201).json({
       data
     });
-  } catch (error) {
-    client.close();
-    res.status(422).json({
-      message: "Something went wrong...",
-      error
-    });
-  }
+  // } catch (error) {
+  //   client.close();
+  //   res.status(422).json({
+  //     message: "Something went wrong...",
+  //     error
+  //   });
+  // }
 
   return;
 }
@@ -207,6 +215,96 @@ async function queryTotality(query, db, filter, authUser){
   }
 
   return [];
+}
+
+async function queryTopCustomers(query, db){
+  let dateString = "";
+
+  if(query.filter=="year"){
+    dateString = `${query.year}`;
+  }
+
+  if(query.filter=="month" && query.month && query.year){
+    dateString = `${query.year}-${ledMonthNum(parseInt(query.month))}`;
+  }
+
+  const data = await db.collection("orders")
+  .aggregate([
+    {
+      "$match": {
+        "order_date": {
+          "$regex": dateString
+        }
+      }
+    },
+    {"$group" : {_id:"$customer_id", count:{$sum:1}}},
+    { $sort: { count: -1 } }
+  ])
+  .limit(10)
+  .toArray();
+
+  const customers = await db.collection("customers")
+    .find({"_id": { "$in": data.map((s)=>s._id)}})
+    .project({
+      name: 1
+    })
+    .toArray();
+
+  const remapped = data.map((d)=>{
+    d.customer = customers.find((c)=>c._id.equals(d._id));
+    return d;
+  });
+
+  return remapped;
+}
+
+async function queryBestSeller(query, db){
+  let dateString = "";
+
+  if(query.filter=="year"){
+    dateString = `${query.year}`;
+  }
+
+  if(query.filter=="month" && query.month && query.year){
+    dateString = `${query.year}-${ledMonthNum(parseInt(query.month))}`;
+  }
+
+  const data = await db.collection("orders")
+  .aggregate([
+    {
+      "$match": {
+        "order_date": {
+          "$regex": dateString
+        }
+      }
+    },
+    {"$unwind": "$orders"},
+    {"$project": {order: "$orders"}},
+    {"$group": {_id: "$order.menu_id", count: {"$sum": "$order.quantity"}}},
+    { $sort: { count: -1 } }
+  ])
+  .toArray();
+
+  const menu = await db.collection("menu")
+    .find({"_id": { "$in": data.map((s)=>s._id)}})
+    .project({
+      name: 1
+    })
+    .toArray();
+
+
+  const grouped = groupBy(data, "_id");
+  const remapped = [];
+  forEach(grouped, function(byId){
+    const menuItem = menu.find((c)=>c._id.equals(byId[0]._id));
+    const totality = byId.map((e)=>{return e.count})
+    remapped.push({
+      name: menuItem?.name || "!!ERR",
+      count: sum(totality)
+    });
+  });
+
+  return orderBy(remapped, "count", "desc");
 }
 
 export default handler;

@@ -10,6 +10,8 @@ import moment from "moment";
 import SalesReporting from "./_reporting/sales/reporting";
 import ReportingCardPage from "./_reporting/card";
 import { useSession } from "next-auth/react";
+import TopCustomersReporting from "./_reporting/sales/topCustomers";
+import BestSellerReporting from "./_reporting/sales/bestSeller";
 
 export default function Admin(){
   const { data: session } = useSession();
@@ -101,6 +103,8 @@ export default function Admin(){
       <ReportingCardPage filterBy={filterBy} fMonth={fMonth} fYear={fYear}/>
       <ExpensesReporting filterBy={filterBy} fMonth={fMonth} fYear={fYear}/>
       <SalesReporting filterBy={filterBy} fMonth={fMonth} fYear={fYear}/>
+      <TopCustomersReporting filterBy={filterBy} fMonth={fMonth} fYear={fYear}/>
+      <BestSellerReporting  filterBy={filterBy} fMonth={fMonth} fYear={fYear}/>
     </main>
   );
 }
