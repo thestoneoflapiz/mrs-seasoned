@@ -95,7 +95,7 @@ export default function LoginPage(){
 
   return(
     <>
-    <Container fluid>
+    <Container style={{width: "100%", margin: "0"}}>
       <ToastContainer
         className="p-3"
         position="top-center"
@@ -112,56 +112,64 @@ export default function LoginPage(){
           <Toast.Body className="text-white">{toastMsg}</Toast.Body>
         </Toast>
       </ToastContainer>
-      <div  className={styles.c_login}> 
-        <Row className="justify-content-center align-items-center">
-          <Col xs={12} className="mb-5">
-            <h3>Admin Dashboard Login</h3>
-          </Col>
-          <Col>
-            <Form noValidate validated={validated} onSubmit={handleSubmit}>
-              <Row className="mb-3">
-                <Form.Group 
-                  as={Col} md="12" 
-                  className="mb-3"
-                >
-                  <Form.Control
-                    required
-                    minLength={8}
-                    onChange={(e)=>handleInput(e)}
-                    isInvalid={errors.username}
-                    id="username"
-                    type="text"
-                    placeholder="username"
-                    ref={usernameRef}
-                  />
-                  {
-                    errors.username && errors.username.map((err, i)=><Form.Control.Feedback type="invalid" key={i}>{err}</Form.Control.Feedback>)
-                  }
-                </Form.Group>
-                <Form.Group 
-                  as={Col} 
-                  md="12" 
-                >
-                  <Form.Control
-                    required
-                    minLength={8}
-                    onChange={(e)=>handleInput(e)}
-                    isInvalid={errors.password}
-                    id="password"
-                    type="password"
-                    placeholder="password"
-                    ref={passwordRef}
-                  />
-                  {
-                    errors.password && errors.password.map((err, i)=><Form.Control.Feedback type="invalid" key={i}>{err}</Form.Control.Feedback>)
-                  }
-                </Form.Group>
-              </Row>
-              <Button type="submit">Login</Button>
-            </Form>
-          </Col>
-        </Row>
-      </div>
+      <Row className={"justify-content-start "+styles.c_login_wrapper}>
+        <Col 
+          className={styles.c_login}
+          xl={4}
+          md={6}
+          sm={8}
+          xs={12}
+        >
+          <Row className="justify-content-center align-items-center">
+            <Col xs={12} className="mb-5">
+              <h3>Admin Dashboard Login</h3>
+            </Col>
+            <Col>
+              <Form noValidate validated={validated} onSubmit={handleSubmit}>
+                <Row className="mb-3">
+                  <Form.Group 
+                    as={Col} md="12" 
+                    className="mb-3"
+                  >
+                    <Form.Control
+                      required
+                      minLength={8}
+                      onChange={(e)=>handleInput(e)}
+                      isInvalid={errors.username}
+                      id="username"
+                      type="text"
+                      placeholder="username"
+                      ref={usernameRef}
+                    />
+                    {
+                      errors.username && errors.username.map((err, i)=><Form.Control.Feedback type="invalid" key={i}>{err}</Form.Control.Feedback>)
+                    }
+                  </Form.Group>
+                  <Form.Group 
+                    as={Col} 
+                    md="12" 
+                  >
+                    <Form.Control
+                      required
+                      minLength={8}
+                      onChange={(e)=>handleInput(e)}
+                      isInvalid={errors.password}
+                      id="password"
+                      type="password"
+                      placeholder="password"
+                      ref={passwordRef}
+                    />
+                    {
+                      errors.password && errors.password.map((err, i)=><Form.Control.Feedback type="invalid" key={i}>{err}</Form.Control.Feedback>)
+                    }
+                  </Form.Group>
+                </Row>
+                <Button type="submit">Login</Button>
+              </Form>
+            </Col>
+          </Row>
+        </Col>
+      </Row>
     </Container>
     </>
   )

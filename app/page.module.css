@@ -54,18 +54,37 @@
   width: 100%;
 }
 
+.c_login_wrapper{
+  height: 100vh;
+}
+
 .c_login{
   background-color: #fff;
   border-top-right-radius: 10px;
   border-bottom-right-radius: 10px;
   
-  position: absolute;
-  top: 0;
-  bottom: 0;
-  right: 0;
-  left: 0;
-  width: 50%;
   padding: 3%;
+}
+
+@media (max-width:575px) {
+  .c_login_wrapper{
+    height: 100%;
+  } 
+
+  .c_login{
+    background-color: #fff;
+    border-top-right-radius: unset;
+    border-bottom-right-radius: 10px;
+    border-bottom-left-radius: 10px;
+    
+    padding: 10% 5%;
+  }
+
+  .c_background{
+    height: 100vh;
+    background: -webkit-linear-gradient(to bottom, #56B4D3, #BFFE71);  /* Chrome 10-25, Safari 5.1-6 */
+    background: linear-gradient(to bottom, #56B4D3, #BFFE71); /* W3C, IE 10+/ Edge, Firefox 16+, Chrome 26+, Opera 12+, Safari 7+ */
+  }
 }
 
 .c_div, .c_div__color, .c_report_wrapper{
