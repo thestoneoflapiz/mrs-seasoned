@@ -1,6 +1,5 @@
-import { getAuthUser } from "@/helpers/auth";
+import { getAuthUser, hashPassword } from "@/helpers/auth";
 import { connectToDatabase } from "@/helpers/db";
-import { BSON } from "mongodb";
 import moment from "moment";
 
 async function handler(req, res){
@@ -9,8 +8,8 @@ async function handler(req, res){
   }
 
   const data = JSON.parse(req.body);
-  const { _id, name, quantity, price } = data;
-  if(!_id || !name || !price){
+  const { role, name, username } = data;
+  if(!role || !name || !username || username.trim().length < 8){
     res.status(422).json({
       message: "Please fill in required fields..."
     });
@@ -22,20 +21,22 @@ async function handler(req, res){
   const db = client.db();
   const authUser = await getAuthUser(req);
 
-  const nid = new BSON.ObjectId(_id);
+  const defaultPassword = `${username}${moment().format("YYYY")}$$`;
+  const hashed = await hashPassword(defaultPassword);
+
   try {
-    const menu = await db.collection("menu").updateOne({ _id: nid}, {
-      $set: {
-        name,
-        price,
-        updated_at: moment().format(),
-        updated_by: authUser.username || "!!ERR"
-      }
+    const users = await db.collection("users").insertOne({
+      role, 
+      name, 
+      username,
+      password: hashed, 
+      created_at: moment().format("YYYY-MM-DD HH:mm:ss"),
+      created_by: authUser?.name || (authUser?.name || "!!ERR")
     })
 
     client.close();
     res.status(201).json({
-      message: "Item updated!"
+      message: "User created!"
     });
   } catch (error) {
     client.close();

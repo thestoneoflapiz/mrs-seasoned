@@ -3,8 +3,8 @@
 import { useState } from "react";
 import { Modal, Button, Row, Col, Toast } from "react-bootstrap";
 
-export default function DeleteExpenseModal({ show, onModalClose, data }){
-  const itemDetails = data;
+export default function DeleteUserModal({ show, onModalClose, data }){
+  const userDetails = data;
   const [showToast, setShowToast] = useState(false);
   const [toastMsg, setToastMsg] = useState({
     variant: "success",
@@ -15,11 +15,11 @@ export default function DeleteExpenseModal({ show, onModalClose, data }){
     onModalClose(data);
   }
   
-  async function deleteExpense(){
-    const response = await fetch("/api/expenses/delete", {
+  async function deleteUser(){
+    const response = await fetch("/api/users/delete", {
       method: "POST",
       body: JSON.stringify({
-        _id: itemDetails._id
+        _id: userDetails._id
       },{
         headers:{
           "Content-Type": "application/json"
@@ -73,10 +73,10 @@ export default function DeleteExpenseModal({ show, onModalClose, data }){
             >
               <Toast.Body className="text-white">{toastMsg.message}</Toast.Body>
             </Toast>
-            <p>Are you sure to delete {itemDetails?.title || "expense item"}?</p>
+            <p>Are you sure to delete {userDetails?.name || "user"}?</p>
             <Row className="justify-content-end align-items-center">
               <Col sm={3} xs={4}>
-                <Button type="button" variant="primary" onClick={deleteExpense}>Yes</Button>
+                <Button type="button" variant="primary" onClick={deleteUser}>Yes</Button>
               </Col>
               <Col sm={3} xs={4}>
                 <Button type="button" variant="outline-danger" onClick={()=>handleModalClose(null)}>No</Button>

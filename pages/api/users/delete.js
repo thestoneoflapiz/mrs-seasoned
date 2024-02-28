@@ -9,10 +9,10 @@ async function handler(req, res){
   }
 
   const data = JSON.parse(req.body);
-  const { _id, item_type, item, quantity, price, bought_date, bought_from, remarks } = data;
-  if(!_id || !item_type || !item || !quantity || !price){
+  const { _id } = data;
+  if(!_id){
     res.status(422).json({
-      message: "Please fill in required fields..."
+      message: "Unable to retrieve data..."
     });
 
     return;
@@ -24,24 +24,16 @@ async function handler(req, res){
 
   const nid = new BSON.ObjectId(_id);
   try {
-    const expenses = await db.collection("expenses").updateOne({ _id: nid}, {
+    const users = await db.collection("users").updateOne({ _id: nid}, {
       $set: {
-        item_type,
-        item,
-        quantity,
-        price,
-        total: parseFloat(quantity)*parseFloat(price),
-        bought_date: moment(bought_date).format(),
-        bought_from,
-        remarks,
-        updated_at: moment().format(),
-        updated_by: authUser.username || "!!ERR"
+        deleted_at: moment().format(),
+        deleted_by: authUser.username || "!!ERR"
       }
     })
 
     client.close();
     res.status(201).json({
-      message: "Item updated!"
+      message: "Item deleted!"
     });
   } catch (error) {
     client.close();

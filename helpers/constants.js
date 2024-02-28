@@ -44,3 +44,9 @@ export function MOPs(){
     "Card", "Others"
   ]
 }
+
+export function UserRoles(){
+  return [
+    "superadmin", "admin", "staff"
+  ]
+}

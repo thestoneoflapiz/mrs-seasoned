@@ -28,26 +28,6 @@ export default function LoginPage(){
     });
   }
 
-  // async function createUser(user, pass){
-  //   const response = await fetch("/api/auth/signup", {
-  //     method: "POST",
-  //     body: JSON.stringify({
-  //       username: user,
-  //       password: pass
-  //     },{
-  //       headers:{
-  //         "Content-Type": "application/json"
-  //       }
-  //     })
-  //   });
-
-  //   const data = await response.json();
-
-  //   if(!response.ok){
-  //     alert(data.message || "SOMETHING WENT WRONG!")
-  //   }
-  // }
-
   const handleSubmit = async (event) => {
     const form = event.currentTarget;
     event.preventDefault();
@@ -58,7 +38,7 @@ export default function LoginPage(){
 
     const enteredUsername = usernameRef.current.value;
     const enteredPassword = passwordRef.current.value;
-    // createUser(enteredUsername, enteredPassword);
+
     const result = await signIn("credentials", {
       redirect: false,
       username: enteredUsername,
