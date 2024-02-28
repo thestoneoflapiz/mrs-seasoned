@@ -1,7 +1,6 @@
 import { getToken } from 'next-auth/jwt';
 import { NextResponse } from 'next/server'
 import { adminAccess, staffAccess } from './helpers/constants';
-import { join, slice } from 'lodash';
  
 export async function middleware(req) {
   const session = await getToken({ req });
@@ -10,10 +9,10 @@ export async function middleware(req) {
   const splitPathname = rawPathname.split("/");
     let pathname = "";
   if( splitPathname.length > 3 ){
-    const removedPathname = slice(splitPathname,0,3);
-    pathname = join(removedPathname, "/");
+    const removedPathname = splitPathname.slice(0,3);
+    pathname = removedPathname.join("/");
   }else{
-    pathname = join(splitPathname, "/");
+    pathname = splitPathname.join("/");
   }
 
   if(session && session.user?._id){
