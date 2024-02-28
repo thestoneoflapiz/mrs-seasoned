@@ -10,8 +10,11 @@ import { convertDateToString } from "@/helpers/date";
 import Loading from "@/components/loading";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import { useSession } from "next-auth/react";
 
 export default function ExpenseItem({ params }){
+  const { data: session } = useSession();
+  const authUser = session?.user || null;
   const route = useRouter();
 
   const [isLoading, setIsLoading] = useState(true);
@@ -203,6 +206,7 @@ export default function ExpenseItem({ params }){
             <h3 className="text-center fw-bold my-5"><Link href="/admin/expenses" className="text-light">No Record Found.</Link></h3>
           </>)
         }
+
         <div className={styles.c_div}>
           <Row>
             <Col>
@@ -214,13 +218,18 @@ export default function ExpenseItem({ params }){
               </Breadcrumb>
             </Col>
           </Row>
-          <Row className="justify-content-end align-items-center mb-2">
-            <Col>
-              <Button variant="outline-danger" className="float-end mx-3" onClick={handleDeleteModal}>Delete</Button>
-              <Button variant="warning" className="float-end" onClick={handleEditModal}>Edit</Button>
-            </Col>
-          </Row>
+          {
+            (authUser && authUser.role !== "staff") && (
+              <Row className="justify-content-end align-items-center mb-2">
+                <Col>
+                  <Button variant="outline-danger" className="float-end mx-3" onClick={handleDeleteModal}>Delete</Button>
+                  <Button variant="warning" className="float-end" onClick={handleEditModal}>Edit</Button>
+                </Col>
+              </Row>
+            )
+          }
         </div>
+
         <div className={styles.c_div__color}>
           {isLoading ? (<Loading variant="info" />): (
             <Row className="mb-3">

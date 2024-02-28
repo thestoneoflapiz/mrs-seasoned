@@ -1,3 +1,4 @@
+import { getAuthUser } from "@/helpers/auth";
 import { connectToDatabase } from "@/helpers/db";
 import { ledMonthNum } from "@/helpers/strings";
 import { forEach, groupBy, sortBy, sum, values } from "lodash";
@@ -48,6 +49,7 @@ async function handler(req, res){
 
   const client = await connectToDatabase();
   const db = client.db();
+  const authUser = await getAuthUser(req);
   
   let data = [];
   try {
@@ -58,7 +60,7 @@ async function handler(req, res){
       break;
 
       case "totality":
-        data = await queryTotality(completeQuery, db, query.filter);
+        data = await queryTotality(completeQuery, db, query.filter, authUser);
       break;
     
       default:
@@ -130,7 +132,7 @@ async function queryTotal(query, db, filter){
   return [];
 }
 
-async function queryTotality(query, db, filter){
+async function queryTotality(query, db, filter, authUser){
   const remapped = [];
   const data = await db.collection("orders")
     .find(query)
@@ -169,11 +171,13 @@ async function queryTotality(query, db, filter){
     const totalExpectedSales = sumNoDiscounts+sumDiscountsReverted;
     const totalAmountOfDiscounted = totalExpectedSales-sumSales;
 
-    remapped.push({
-      name: "Tubo",
-      desc: `30% off sales`,
-      amount: (totalExpectedSales*0.3)-totalAmountOfDiscounted,
-    });
+    if(["superadmin", "admin"].includes(authUser.role)){
+      remapped.push({
+        name: "Tubo",
+        desc: `30% off sales`,
+        amount: (totalExpectedSales*0.3)-totalAmountOfDiscounted,
+      });
+    }
 
     remapped.push({
       name: "Discount",

@@ -50,3 +50,41 @@ export function UserRoles(){
     "superadmin", "admin", "staff"
   ]
 }
+
+export const adminAccess = [
+  "/admin",
+  "/admin/expenses",
+  "/admin/menu",
+  "/admin/sales",
+  "/admin/users",
+  "/admin/user",
+];
+
+export const staffAccess = [
+  "/admin",
+  "/admin/expenses",
+  "/admin/sales",
+  "/admin/user",
+];
+
+export const defaultPages = [
+  {
+    name: "Home",
+    link: "/admin", 
+  },{
+    name: "Expenses",
+    link: "/admin/expenses", 
+  },
+  {
+    name: "Sales",
+    link: "/admin/sales", 
+  },
+  {
+    name: "Menu",
+    link: "/admin/menu", 
+  },
+  {
+    name: "Users",
+    link: "/admin/users", 
+  }
+];

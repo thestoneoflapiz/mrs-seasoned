@@ -10,8 +10,15 @@ import { convertDateToString } from "@/helpers/date";
 import Loading from "@/components/loading";
 import Link from "next/link";
 import moment from "moment";
+import { useSession } from "next-auth/react";
+import { useRouter } from "next/navigation";
 
 export default function SalesItem({ params }){
+  const { data: session } = useSession();
+  const authUser = session?.user || null;
+  const route = useRouter();
+
+
   const [isLoading, setIsLoading] = useState(true);
   const [dtIsLoading, setDtIsLoading] = useState(true);
   const [page, setPage] = useState(1);
@@ -53,13 +60,13 @@ export default function SalesItem({ params }){
       setToastMsg((prev)=>{
         const newState = prev;
         newState.variant = "info";
-        newState.message = "Redirecting to Expenses page...";
+        newState.message = "Redirecting to Sales page...";
         return newState;
       });
       setShowToast(true);
 
       setTimeout(() => {
-        route.push("/admin/expenses");
+        route.push("/admin/sales");
       }, 2500);
     }
   };
@@ -260,12 +267,16 @@ export default function SalesItem({ params }){
               </Breadcrumb>
             </Col>
           </Row>
-          <Row className="justify-content-end align-items-center mb-2">
-            <Col>
-              <Button variant="outline-danger" className="float-end mx-3" onClick={handleDeleteModal}>Delete</Button>
-              <Button variant="warning" className="float-end" onClick={handleEditModal}>Edit</Button>
-            </Col>
-          </Row>
+          {
+            (authUser && authUser.role !== "staff") && (
+              <Row className="justify-content-end align-items-center mb-2">
+                <Col>
+                  <Button variant="outline-danger" className="float-end mx-3" onClick={handleDeleteModal}>Delete</Button>
+                  <Button variant="warning" className="float-end" onClick={handleEditModal}>Edit</Button>
+                </Col>
+              </Row>
+            )
+          }
         </div>
         <div className={styles.c_div__color}>
           {isLoading ? (<Loading variant="info" />): (

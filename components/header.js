@@ -3,32 +3,16 @@
 import { Navbar, Container, Nav, Image, Row, Col, Button } from "react-bootstrap";
 import styles from "@/app/page.module.css"
 import Link from "next/link";
-import { signOut } from "next-auth/react";
+import { signOut, useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
+import { useEffect, useState } from "react";
+import { adminAccess, defaultPages, staffAccess } from "@/helpers/constants";
 
 export default function Header({ pageTitle, activePage="" }){
+  const { data: session } = useSession();
+
   const router = useRouter();
-  const pages = [
-    {
-      name: "Home",
-      link: "/admin", 
-    },{
-      name: "Expenses",
-      link: "/admin/expenses", 
-    },
-    {
-      name: "Sales",
-      link: "/admin/sales", 
-    },
-    {
-      name: "Menu",
-      link: "/admin/menu", 
-    },
-    {
-      name: "Users",
-      link: "/admin/users", 
-    }
-  ]
+  const [pages, setPages] = useState([]);
   
   function logoutHandler(){
     signOut();
@@ -44,6 +28,29 @@ export default function Header({ pageTitle, activePage="" }){
     })
     return pageNav;
   }
+
+  function displayAccessible(){
+    if(session.user && session.user.role){
+      switch (session.user.role) {
+        case "admin":
+          const adminPage = defaultPages.filter((p)=>adminAccess.includes(p.link))
+          setPages(adminPage);
+        break;
+        case "staff":
+          const staffPage = defaultPages.filter((p)=>staffAccess.includes(p.link))
+          setPages(staffPage);
+          break;
+      
+        default:
+          setPages(defaultPages);
+        break;
+      }
+    }
+  }
+
+  useEffect(()=>{
+    displayAccessible();
+  }, [session])
 
   return (<>
     <Navbar expand="lg" className="bg-body-tertiary">

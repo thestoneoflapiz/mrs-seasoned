@@ -15,11 +15,6 @@ export default function ReportingCardPage({ filterBy, fMonth, fYear }){
       amount: 0,
     }, 
     {
-      name: "Tubo",
-      desc: "30% off",
-      amount: 0
-    }, 
-    {
       name: "Fee",
       desc: "Delivery fees",
       amount: 0
@@ -141,8 +136,8 @@ export default function ReportingCardPage({ filterBy, fMonth, fYear }){
 
   return(
     <>
-      <Container>
-        <Row>
+      <Container className="mt-5">
+        <Row className="justify-content-center align-items-center">
           {totalExpenses.map((s,i)=>{
             return(
               <Col xl={2} lg={3} md={4} sm={4} xs={6} className="mb-3" key={i+"expensesdiv"}>

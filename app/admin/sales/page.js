@@ -19,8 +19,12 @@ import { useCallback, useEffect, useState } from "react";
 import { debounce } from "lodash";
 import Loading from "@/components/loading";
 import moment from "moment";
+import { useSession } from "next-auth/react";
 
 export default function SalesPage(){
+  const { data: session } = useSession();
+  const authUser = session?.user || null;
+
   const [isLoading, setIsLoading] = useState(true);
   const [showToast, setShowToast] = useState(false);
   const [toastMsg, setToastMsg] = useState({
@@ -276,11 +280,15 @@ export default function SalesPage(){
               <Button variant="primary" className="float-end" onClick={handleAddModalOpen}>Add Sales</Button>
             </Col>
           </Row>
-          <Row className="justify-content-end align-items-center">
-            <Col lg={2} md={3} sm={6} xs={6}>
-              <Button variant="outline-primary" className="float-end" onClick={handleImportModalOpen}>Import CSV</Button>
-            </Col>
-          </Row>
+          {
+            (authUser && authUser.role !== "staff") && (
+              <Row className="justify-content-end align-items-center">
+                <Col lg={2} md={3} sm={6} xs={6}>
+                  <Button variant="outline-primary" className="float-end" onClick={handleImportModalOpen}>Import CSV</Button>
+                </Col>
+              </Row>
+            )
+          }
         </div>
         <div className={styles.c_div__color}>
           <Row>
