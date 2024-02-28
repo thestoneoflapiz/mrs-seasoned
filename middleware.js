@@ -6,7 +6,7 @@ export async function middleware(req) {
 
   if(session && session.user?._id){
     return;
-  }
+  } 
   
   return NextResponse.redirect(new URL('/', req.url))
 }
