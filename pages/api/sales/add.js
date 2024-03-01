@@ -1,6 +1,7 @@
 import { getAuthUser } from "@/helpers/auth";
 import { connectToDatabase } from "@/helpers/db";
 import moment from "moment";
+import { BSON } from "mongodb";
 
 async function handler(req, res){
   if(req.method !== "POST"){
@@ -88,7 +89,7 @@ async function getOrCreateCustomer(name,db,authUser){
 function createOrders(orders){
   const remapOrders = orders.map((order)=>{
     return {
-      menu_id: order.menu_id,
+      menu_id: new BSON.ObjectId(order.menu_id),
       price: order.price,
       quantity: order.quantity,
       total: order.price * order.quantity,
