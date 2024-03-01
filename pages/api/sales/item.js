@@ -37,7 +37,8 @@ async function handler(req, res){
 
     saleItem.customer = customer?.name || "!!ERR";
     saleItem.orders = saleItem.orders.map((o)=>{
-      o.menu = menuList.find((m)=>m._id==o.menu_id)?.name || "!!EERR";
+      const menuItem = menuList.find((m)=>m._id.equals(o.menu_id));
+      o.menu = menuItem?.name || "!!ERR";
       return o;
     })
     
