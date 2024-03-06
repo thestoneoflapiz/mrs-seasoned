@@ -86,5 +86,9 @@ export const defaultPages = [
   {
     name: "Users",
     link: "/admin/users", 
+  },
+  {
+    name: "Cash Out",
+    link: "/admin/cash_out", 
   }
 ];

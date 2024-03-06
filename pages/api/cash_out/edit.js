@@ -9,8 +9,8 @@ async function handler(req, res){
   }
 
   const data = JSON.parse(req.body);
-  const { _id, name, price } = data;
-  if(!_id || !name || !price){
+  const { _id, reason, amount } = data;
+  if(!_id || !reason || !amount){
     res.status(422).json({
       message: "Please fill in required fields..."
     });
@@ -24,10 +24,10 @@ async function handler(req, res){
 
   const nid = new BSON.ObjectId(_id);
   try {
-    const menu = await db.collection("menu").updateOne({ _id: nid}, {
+    const cash_outs = await db.collection("cash_outs").updateOne({ _id: nid}, {
       $set: {
-        name,
-        price,
+        reason,
+        amount,
         updated_at: moment().format(),
         updated_by: authUser.username || "!!ERR"
       }

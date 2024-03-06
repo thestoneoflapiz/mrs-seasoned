@@ -60,7 +60,7 @@ async function handler(req, res){
       break;
 
       case "totality":
-        data = await queryTotality(completeQuery, db, query.filter, authUser);
+        data = await queryTotality(completeQuery, db, query, authUser);
       break;
 
       case "top_customers":
@@ -155,7 +155,7 @@ async function queryTotality(query, db, filter, authUser){
     })
     .toArray();
 
-  // sales, tubo, dfee, discounts, customers, places
+  // sales, tubo, dfee, discounts, customers, places, cash_outs
   
   if(data && data.length > 0){
     const totalSales = data.map((s)=>{ return s.total-s.delivery_fee });
@@ -210,6 +210,36 @@ async function queryTotality(query, db, filter, authUser){
       desc: `total of`,
       amount: totalPlaces.length || 0,
     });
+
+    if(filter.filter=="year"){
+      const dataCos = await db.collection("cash_outs")
+      .find({
+        "deleted_at": {
+          "$exists": false,
+        }
+      })
+      .project({
+        amount: 1
+      })
+      .toArray();
+  
+      const sumCos = sum(dataCos.map((c)=>{return c.amount}));
+      remapped.push({
+        name: "Cash OUTs",
+        desc: `total of`,
+        amount: sumCos || 0,
+      });
+  
+      const remainingBals = sumSales-sumCos;
+      remapped.push({
+        name: "Sales - COs",
+        desc: `total of`,
+        amount: remainingBals || 0,
+      });
+
+    }
+
+    
 
     return remapped;
   }
