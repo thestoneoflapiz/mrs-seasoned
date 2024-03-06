@@ -27,7 +27,7 @@ async function handler(req, res){
     const cash_outs = await db.collection("cash_outs").updateOne({ _id: nid}, {
       $set: {
         reason,
-        amount,
+        amount: parseFloat(amount),
         updated_at: moment().format(),
         updated_by: authUser.username || "!!ERR"
       }
