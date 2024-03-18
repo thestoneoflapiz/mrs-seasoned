@@ -35,8 +35,16 @@ async function handler(req, res){
 
     switch (searchBy) {
       case "customer":
-        const fsCustomer = await db.collection("customers").findOne({"name": { "$eq": query.search }});
-        completeQuery = {...completeQuery, "customer_id": { "$eq": fsCustomer?._id || "" }}
+        const fsCustomers = await db.collection("customers")
+          .find({
+            "$text": {
+              "$search": query.search
+            }
+          }).project({
+          "_id": 1,
+        }).toArray();
+        const customerIds = fsCustomers.map((c)=>{return c._id});
+        completeQuery = {...completeQuery, "customer_id": { "$in": customerIds ?? [] }}
       break;
       case "order_id":
         completeQuery = {...completeQuery, "order_id": { "$eq": query.search }};
