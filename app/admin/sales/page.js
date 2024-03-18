@@ -4,6 +4,7 @@ import styles from "@/app/page.module.css";
 import Datatable from "@/components/datatable";
 import AddSaleModal from "./_modals/add";
 import ImportSalesCSVModal from "./_modals/import";
+import Papa from "papaparse";
 
 import { 
   Container, 
@@ -12,7 +13,8 @@ import {
   Button, 
   Form,
   ToastContainer,
-  Toast
+  Toast,
+  Spinner
 } from "react-bootstrap";
 import { ConstMonths, ConstYears } from "@/helpers/constants";
 import { useCallback, useEffect, useState } from "react";
@@ -242,6 +244,102 @@ export default function SalesPage(){
 
   const handleSearchByChange = (e) => setFSearchBy(e.target.value);
 
+  const [isLoadingExport, setIsLoadingExport] = useState(false);
+
+  const handleExport = async() => {
+    setIsLoadingExport(true);
+
+    const filters = new URLSearchParams({
+      month: fMonth,
+      year: fYear,
+      search: fSearch,
+      search_by: fSearchBy,
+      sort: fSort.sort,
+      by: fSort.field,
+    });
+
+    const response = await fetch(`/api/sales/export?${filters}`, {
+      method: "GET",
+    });
+
+    const result = await response.json();
+
+    if(result && (result.sales && result.customers && result.menu)){
+      const remapped = await remapExportList(result);
+      const csv = Papa.unparse(remapped);
+
+      const url = window.URL.createObjectURL(new Blob([csv])) 
+      const link = document.createElement('a')
+
+      link.href = url
+
+      const fileName = `Sales ${months[fMonth-1]} ${fYear}.csv`;
+
+      link.setAttribute('download', fileName)
+      document.body.appendChild(link)
+      link.click();
+      link.remove()
+      
+      setTimeout(() => {
+        setIsLoadingExport(false);
+
+        setToastMsg((prev)=>{
+          const newState = prev;
+          newState.variant = "success";
+          newState.message = "Data Exported!";
+          return newState;
+        });
+        setShowToast(true);
+      }, 1500);
+
+      return;
+    }
+
+    setTimeout(() => {
+      setIsLoadingExport(false);
+
+      setToastMsg((prev)=>{
+        const newState = prev;
+        newState.variant = "danger";
+        newState.message = "Failed to export...";
+        return newState;
+      });
+      setShowToast(true);
+    }, 2500);
+  }
+  
+  const remapExportList = ({ sales, customers, menu }) => {
+    let remap = [];
+
+    sales.forEach((sale) => {
+      const customer = customers.find((c)=>c._id==sale.customer_id);
+
+      sale.orders.forEach((order)=>{
+
+        const item = menu.find((m)=>m._id==order.menu_id);
+        const total = sale.discount > 0 ? (((100-sale.discount)/100)*order.total) : order.total;
+
+        remap.push({
+          "1.Date": moment(sale.order_date).format("MM-DD-YYYY"),
+          "2.Time": moment(sale.order_date).format("hh:mm A"),
+          "3.Customer": customer?.name ?? sale.customer_id,
+          "4.Item": item?.name ?? order.menu_id,
+          "5.QT": order.quantity,
+          "6.Price": order.price,
+          "7.DC": sale.discount,
+          "8.Total": total,
+          "9.MOP": sale.mop,
+          "10.D-Fee": sale.delivery_fee,
+          "11.D-Address": sale.delivery_address,
+          "12.Order#": sale.order_id,
+          "13.Remarks": sale.remarks,
+        });
+      });
+    });
+
+    return remap;
+  }
+  
   useEffect(()=>{
     getSales();
   }, [page, fMonth, fYear, fSearch, fSort, fSearchBy]);
@@ -282,9 +380,20 @@ export default function SalesPage(){
           </Row>
           {
             (authUser && authUser.role !== "staff") && (
-              <Row className="justify-content-end align-items-center">
+              <Row className="justify-content-end align-items-center mb-2">
                 <Col lg={2} md={3} sm={6} xs={6}>
                   <Button variant="outline-primary" className="float-end" onClick={handleImportModalOpen}>Import CSV</Button>
+                </Col>
+              </Row>
+            )
+          }
+          {
+            (authUser && authUser.role !== "staff") && (
+              <Row className="justify-content-end align-items-center">
+                <Col lg={2} md={3} sm={6} xs={6}>
+                  <Button variant="light" className="float-end" onClick={handleExport} disabled={isLoadingExport}>
+                    Export CSV {isLoadingExport && <Spinner animation="grow" variant="dark" size="sm"/>}
+                  </Button>
                 </Col>
               </Row>
             )
