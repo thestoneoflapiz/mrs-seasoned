@@ -5,6 +5,8 @@ import { useEffect, useRef, useState } from "react";
 import { Modal, Button, Form, Row, Col, Toast } from "react-bootstrap";
 import styles from "@/app/page.module.css";
 import { sum } from "lodash";
+import Select from "react-select";
+
 
 export default function AddSalesModal({ show, onModalClose }){
   const mops = MOPs();
@@ -20,6 +22,7 @@ export default function AddSalesModal({ show, onModalClose }){
   const [orderId, setOrderId] = useState("");
   const orderDateRef = useRef();
   const customerRef = useRef();
+  const [ddCustomer, setDDCustomer] = useState("");
   const [orders, setOrders] = useState([]);
   const discountRef = useRef();
   const [total, setTotal] = useState(0);
@@ -32,6 +35,7 @@ export default function AddSalesModal({ show, onModalClose }){
     setValidated(false);
     setOrders([]);
     setTotal(0);
+    setShowCreateCustomer(false);
   }
 
   function handleAddFG(){
@@ -181,7 +185,8 @@ export default function AddSalesModal({ show, onModalClose }){
 
   async function createItem(){
     const eDate = orderDateRef.current.value;
-    const eCustomer = customerRef.current.value;
+    const isNewCustomer = showCreateCustomer;
+    const eCustomer = isNewCustomer ? customerRef.current.value : ddCustomer.value
     const eDiscount = discountRef.current.value;
     const eMop = mopRef.current.value;
     const eAddress = addressRef.current.value;
@@ -201,6 +206,7 @@ export default function AddSalesModal({ show, onModalClose }){
         delivery_fee: parseFloat(eFee),
         total: parseFloat(total),
         remarks: eRemarks,
+        is_new_customer: isNewCustomer,
       },{
         headers:{
           "Content-Type": "application/json"
@@ -274,11 +280,45 @@ export default function AddSalesModal({ show, onModalClose }){
     const { list } = data;
     setMenu(list);
   }
+
+  // drop-down customers
+  const [customers, setCustomers] = useState([]);
+  const [showCreateCustomer, setShowCreateCustomer] = useState(false);
+  
+  async function getCustomers(){
+    const response = await fetch("/api/customers/list?paginate=0", {
+      method: "GET",
+    });
+
+    const data = await response.json();
+
+    if(!response.ok){
+      setToastMsg((prev)=>{
+        const newState = prev;
+        newState.variant = "danger";
+        newState.message = data.message || "SOMETHING WENT WRONG!";
+        return newState;
+      });
+
+      setShowToast(true);
+      return;
+    }
+
+    const { list } = data;
+    const ddCustomerLis = list.map((d)=>{
+      return {
+        value: d._id,
+        label: d.name
+      }
+    });
+    setCustomers(ddCustomerLis);
+  }
   
   useEffect(()=>{
     if(show){
       getOrderId();
       getMenu();
+      getCustomers();
     }
   },[show])
 
@@ -350,13 +390,40 @@ export default function AddSalesModal({ show, onModalClose }){
                   className="mb-3"
                 >
                   <Form.Label column="sm" className="text-secondary">Customer</Form.Label>
-                  <Form.Control
-                    autoFocus
-                    id="customer"
-                    type="text"
-                    placeholder="FN LN or alias"
-                    ref={customerRef}
-                  />
+                  <Row className="mb-2">
+                    <Col xs={12} style={{textAlign: "right"}} className="px-3">
+                      <Button 
+                        variant={showCreateCustomer?"outline-success":"outline-primary"}
+                        onClick={()=>{setShowCreateCustomer(!showCreateCustomer)}}
+                        size="sm"
+                        className=""
+                      >
+                        {showCreateCustomer ? "Existing":"New"} Customer
+                      </Button>
+                    </Col>
+                  </Row>
+                  {
+                    showCreateCustomer ? (
+                    <Form.Control
+                      autoFocus
+                      id="customer"
+                      type="text"
+                      placeholder="FN LN or alias"
+                      ref={customerRef}
+                      required
+                    />) : (
+                    <Select
+                      required
+                      className="basic-single"
+                      classNamePrefix="select"
+                      isClearable
+                      isSearchable
+                      name="customer_dd"
+                      options={customers}
+                      onChange={(selected) => setDDCustomer(selected)}
+                    />)
+                  }
+
                 </Form.Group>
 
                 {/* Order Form Group */}

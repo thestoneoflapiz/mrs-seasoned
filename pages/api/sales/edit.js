@@ -12,7 +12,7 @@ async function handler(req, res){
 
   const { _id, order_date, order_id, customer, orders, 
     discount, mop, delivery_address, delivery_fee,
-    total, remarks } = data;
+    total, remarks, is_new_customer } = data;
 
   if(
     !_id || !order_date || !order_id || !customer 
@@ -31,14 +31,20 @@ async function handler(req, res){
 
   const nid = new BSON.ObjectId(_id);
   try {
-    const cCustomer = await getOrCreateCustomer(customer, db, authUser);
-    const cOrders = createOrders(orders);
+    let customer_id = null;
+    if(is_new_customer){
+      const cCustomer = await getOrCreateCustomer(customer, db, authUser);
+      customer_id = cCustomer._id ?? cCustomer.insertedId;
+    }else{
+      customer_id = new BSON.ObjectId(customer);
+    }
     
+    const cOrders = createOrders(orders);
 
     const sales = await db.collection("orders").updateOne({ _id: nid}, {
       $set: {
         order_date: moment(order_date).format(),
-        customer_id: cCustomer._id ?? cCustomer.insertedId,
+        customer_id,
         "orders": cOrders,
         discount,
         mop,

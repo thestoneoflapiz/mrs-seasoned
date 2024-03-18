@@ -6,6 +6,7 @@ import { Modal, Button, Form, Row, Col, Toast } from "react-bootstrap";
 import styles from "@/app/page.module.css";
 import { sum } from "lodash";
 import moment from "moment";
+import Select from "react-select";
 
 export default function AddSalesModal({ show, onModalClose, data}){
   const itemDetails = data;
@@ -20,7 +21,7 @@ export default function AddSalesModal({ show, onModalClose, data}){
 
   const [menu, setMenu] = useState([]);
   const orderDateRef = useRef();
-  const customerRef = useRef();
+  const [ddCustomer, setDDCustomer] = useState("");
   const [orders, setOrders] = useState([]);
   const discountRef = useRef();
   const [total, setTotal] = useState(0);
@@ -182,7 +183,7 @@ export default function AddSalesModal({ show, onModalClose, data}){
 
   async function editItem(){
     const eDate = orderDateRef.current.value;
-    const eCustomer = customerRef.current.value;
+    const eCustomer = ddCustomer.value
     const eDiscount = discountRef.current.value;
     const eMop = mopRef.current.value;
     const eAddress = addressRef.current.value;
@@ -266,12 +267,52 @@ export default function AddSalesModal({ show, onModalClose, data}){
     setOrders(newOrders);
     setTotal(itemDetails?.total || 0);
   }
+
+  // drop-down customers
+  const [customers, setCustomers] = useState([]);
+  const [selectedCustomer, setSelectedCustomer] = useState({});
+
+  async function getCustomers(){
+    const response = await fetch("/api/customers/list?paginate=0", {
+      method: "GET",
+    });
+
+    const data = await response.json();
+
+    if(!response.ok){
+      setToastMsg((prev)=>{
+        const newState = prev;
+        newState.variant = "danger";
+        newState.message = data.message || "SOMETHING WENT WRONG!";
+        return newState;
+      });
+
+      setShowToast(true);
+      return;
+    }
+
+    const { list } = data;
+    const ddCustomerLis = list.map((d)=>{
+      return {
+        value: d._id,
+        label: d.name
+      }
+    });
+
+    const sCustomer = await ddCustomerLis.find((c)=>itemDetails.customer_id == c.value);
+    if(sCustomer){
+      setSelectedCustomer(sCustomer);
+    }
+    setCustomers(ddCustomerLis);
+  }
   
   useEffect(()=>{
     if(show){
       getMenu();
     }
-  },[show])
+
+    getCustomers();
+  },[show, itemDetails])
 
   useEffect(()=>{
     computeTotalAmountToPay();
@@ -341,13 +382,16 @@ export default function AddSalesModal({ show, onModalClose, data}){
                   className="mb-3"
                 >
                   <Form.Label column="sm" className="text-secondary">Customer</Form.Label>
-                  <Form.Control
-                    autoFocus
-                    id="customer"
-                    type="text"
-                    placeholder="FN LN or alias"
-                    ref={customerRef}
-                    defaultValue={itemDetails?.customer ||  ""}
+                  <Select
+                    required
+                    className="basic-single"
+                    classNamePrefix="select"
+                    isClearable
+                    isSearchable
+                    name="customer_dd"
+                    options={customers}
+                    onChange={(selected) => setDDCustomer(selected)}
+                    defaultValue={selectedCustomer}
                   />
                 </Form.Group>
 
